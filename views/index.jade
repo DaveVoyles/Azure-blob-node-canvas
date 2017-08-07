@@ -4,25 +4,7 @@ block content
   h1= title
   p Welcome to #{title}
 
-  <canvas id="myCanvas"></canvas>
+  <canvas id="canvas"></canvas>
 
   script(src="javascripts/imageManip.js")
-
-
-  //- script.
-  //-   var c=document.getElementById("myCanvas");
-  //-   var ctx=c.getContext("2d");
-  //-   var imageObj1 = new Image();
-  //-   var imageObj2 = new Image();
-  //-   imageObj1.src = "cat.jpg"
-  //-   imageObj1.onload = function() {
-  //-     ctx.drawImage(imageObj1, 0, 0, 328, 526);
-  //-     imageObj2.src = "mj.jpg";
-  //-     imageObj2.onload = function() {
-  //-         ctx.drawImage(imageObj2, 15, 85, 300, 300);
-  //-         var img = c.toDataURL("image/png");
-  //-         document.write('<img src="' + img + '" width="328" height="526"/>');
-  //-     }
-  //-   };
-
 

@@ -1,6 +1,6 @@
 // save img: https://stackoverflow.com/questions/923885/capture-html-canvas-as-gif-jpg-png-pdf
 
-const getContext = () => document.getElementById('myCanvas').getContext('2d');
+const getContext = () => document.getElementById('canvas').getContext('2d');
 
 // It's better to use async image loading.
 const loadImage = url => {
@@ -49,7 +49,7 @@ function saveCanvasToImg(){
  */
 function exportCanvasAsPNG(id, fileName) {
 
-    var canvasElement              = document.getElementById('myCanvas');
+    var canvasElement              = document.getElementById('canvas');
     var MIME_TYPE                  = "image/png";
     var imgURL                     = canvasElement.toDataURL(MIME_TYPE);
     var dlLink                     = document.createElement('a');
