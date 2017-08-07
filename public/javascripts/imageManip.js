@@ -20,7 +20,7 @@ const depict = options => {
   const myOptions = Object.assign({}, options);
   return loadImage(myOptions.uri).then(img => {
     ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.sw, myOptions.sh);
-    var image =  document.getElementById('myCanvas').toDataURL();
+    var image =  document.getElementById('canvas').toDataURL();
   });
 };
 
