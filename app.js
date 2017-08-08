@@ -54,18 +54,20 @@ app.use(function(err, req, res, next) {
 //-------------------------------------------------------------
 // Socket.io connections
 io.on('connection', function (socket) {
-  
   log('Socket connection etablished');
+
   socket.on('error', function(e) {
-    log("connected: " + e);
+    log("Client connected: " + e);
+  });
+
+  socket.on('disconnect', function(e) {
+    log('Client disconnected: ' + e);
   });
 
   socket.on('divimg', (payload) => {
     log("socket.broadcast.emit('divimg', payload);");
     socket.broadcast.emit('divimg', payload);
-
   });
-
 
 }); 
 

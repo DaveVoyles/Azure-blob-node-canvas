@@ -2,14 +2,17 @@
 document.addEventListener("DOMContentLoaded", function() {
     "use strict";
 
-    const getCanvas          = () => document.getElementById('canvas');
+    const log              = console.log.bind(console);   
+    const getCanvas        = () => document.getElementById('canvas');
         getCanvas().height = 350;
         getCanvas().width  = 80;
-    const getContext         = () => getCanvas().getContext('2d'     );
+    const getContext       = () => getCanvas().getContext('2d'     );
 
     // Namespace to send / receive socket messages
-    var socket  = io.connect();
-    var log     = console.log.bind(console);   
+    var socket = io.connect('http://localhost:8080', {reconnect: true});
+        socket.on('connect', function(socket) {
+            log('CONNECTED to node server');
+        });
 
     // It's better to use async image loading
     const loadImage = url => {
@@ -23,16 +26,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
     /** Draw the image */
     const depict = options => {
-    const ctx  = getContext();
+        const ctx  = getContext();
 
-    // Make a copy of the original
-    const myOptions = Object.assign({}, options);
-    return loadImage(myOptions.uri).then(img => {
-        ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
-        let image =  getCanvas().toDataURL();
-        socket.emit('divimg', image);
-        log("emiting from client");
-    });
+        // Make a copy of the original
+        const myOptions = Object.assign({}, options);
+        return loadImage(myOptions.uri).then(img => {
+            ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
+            let image =  getCanvas().toDataURL();
+            socket.emit('divimg', image);
+            log("emiting from client");
+        });
     };
 
     let imgH = 50;
