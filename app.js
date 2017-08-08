@@ -52,6 +52,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+
 //-------------------------------------------------------------
 // Socket.io connections
 io.on('connection', function (socket) {
@@ -72,27 +73,30 @@ io.on('connection', function (socket) {
 
 }); 
 
-var azure     = require('azure-storage');
-// Define these in settings.json
+
+//-----------------------------------------------------------
+// Azure blob storage
+
+// Defined in .env file, using dotenv
+var azure              = require('azure-storage');
 var storageAccountName = process.env.AZURE_STORAGE_ACCOUNT;
-// var connString         = process.env.AZURE_STORAGE_CONNECTION_STRING;
-// var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY;
-// var blobService        = azure.createBlobService();
-// var sContainer         = "dumpster";
+var connString         = process.env.AZURE_STORAGE_CONNECTION_STRING;
+var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY;
+var blobService        = azure.createBlobService();
+var sContainer         = "dumpster";
 
-
-// function listBlobs () {
-//     blobService.listBlobsSegmented("dumpster", null, function(err, result) {
-// //         if (err) {
-//             console.log("Couldn't list containers");
-//             console.error(err);
-//         } else {
-//             console.log('Successfully listed containers');
-//             console.log(result.entries);
-//             console.log(result.continuationToken);
-//         }
-//     });
-// }
-// listBlobs();
+function listBlobs () {
+    blobService.listBlobsSegmented("dumpster", null, function(err, result) {
+         if (err) {
+            console.log("Couldn't list containers");
+            console.error(err);
+        } else {
+            console.log('Successfully listed containers');
+            console.log(result.entries);
+            console.log(result.continuationToken);
+        }
+    });
+}
+listBlobs();
 
 module.exports = app;

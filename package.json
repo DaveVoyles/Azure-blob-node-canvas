@@ -19,7 +19,6 @@
     "serve-favicon": "~2.4.2",
     "socket.io": "^2.0.3",
     "http": "^0.0.0",
-    "fs": "^0.0.1-security",
     "dotenv": "^4.0.0"
   }
 }
