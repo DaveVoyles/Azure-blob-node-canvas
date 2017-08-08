@@ -85,18 +85,39 @@ var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY;
 var blobService        = azure.createBlobService();
 var sContainer         = "dumpster";
 
+// Temp vars
+var sContainer = "dumpster";
+var sBlob      = "cat.jpg";
+var sNewName   = "newCat.jpg";
+
 function listBlobs () {
     blobService.listBlobsSegmented("dumpster", null, function(err, result) {
          if (err) {
-            console.log("Couldn't list containers");
-            console.error(err);
+            log("Couldn't list containers");
+            log.error(err);
         } else {
-            console.log('Successfully listed containers');
-            console.log(result.entries);
-            console.log(result.continuationToken);
+            log('Successfully listed containers');
+            log(result.entries);
+            log(result.continuationToken);
         }
     });
 }
 listBlobs();
+
+function getBlobToLocalFile () {
+    blobService.getBlobToLocalFile(sContainer, sBlob,sNewName, function(error, result, response) {
+        if (!error) {
+            log("blob retrieved. NAME: " + result.name);
+            
+            // blobService.createBlockBlobFromLocalFile(sContainer, sNewName, sNewName, function(error, result, response) {
+            //     if (!error) {
+            //             context.log("UpLOADING:: " + result.name);
+            //         // Upload worked
+            //     }
+            // });
+        }
+    });    
+}
+  getBlobToLocalFile();
 
 module.exports = app;
