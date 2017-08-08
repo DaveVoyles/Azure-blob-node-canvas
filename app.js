@@ -1,16 +1,20 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
+var express      = require('express');
+var path         = require('path');
+var favicon      = require('serve-favicon');
+var logger       = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var bodyParser   = require('body-parser');
+var index        = require('./routes/index');
+var users        = require('./routes/users');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
+// Socket.io requirements
+var app      = express();
+var http     = require('http');
+var socketIo = require('socket.io');
+var server   = http.createServer(app);
+var io       = socketIo.listen(server);
 
-var app = express();
-
-// view engine setup
+// view engine setup - HTML works fine out of the box
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
@@ -28,7 +32,7 @@ app.use('/users', users);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
-  err.status = 404;
+      err.status = 404;
   next(err);
 });
 
@@ -42,5 +46,43 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+//-------------------------------------------------------------
+// Socket.io connections
+io.on('connection', function (socket){   
+  socket.on('error', function(e) {
+    console.log(e);
+  });
+
+  socket.on('divimg', (payload) => {
+    socket.broadcast.emit('divimg', payload);
+    console.log("received DIV");
+  });
+
+
+}); 
+
+var azure     = require('azure-storage');
+// // Define these in settings.json
+// var storageAccountName = process.env.AZURE_STORAGE_ACCOUNT;
+// var connString         = process.env.AZURE_STORAGE_CONNECTION_STRING;
+// var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY;
+// var blobService        = azure.createBlobService();
+// var sContainer         = "dumpster";
+
+
+// function listBlobs () {
+//     blobService.listBlobsSegmented("dumpster", null, function(err, result) {
+//         if (err) {
+//             console.log("Couldn't list containers");
+//             console.error(err);
+//         } else {
+//             console.log('Successfully listed containers');
+//             console.log(result.entries);
+//             console.log(result.continuationToken);
+//         }
+//     });
+// }
+// listBlobs();
 
 module.exports = app;

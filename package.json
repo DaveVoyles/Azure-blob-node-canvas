@@ -6,6 +6,8 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "@types/socket.io": "^1.4.29",
+    "azure-storage": "^2.1.0",
     "body-parser": "~1.17.1",
     "bower": "^1.8.0",
     "cookie-parser": "~1.4.3",
@@ -14,6 +16,7 @@
     "jade": "~1.11.0",
     "morgan": "~1.8.1",
     "nodemon": "^1.11.0",
-    "serve-favicon": "~2.4.2"
+    "serve-favicon": "~2.4.2",
+    "socket.io": "^2.0.3"
   }
 }
