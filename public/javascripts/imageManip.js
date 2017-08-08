@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
     return loadImage(myOptions.uri).then(img => {
         ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
         let image =  getCanvas().toDataURL();
-        socket.emit('divimg', image);
+        // socket.emit('divimg', image);
         // console.log(image);
     });
     };

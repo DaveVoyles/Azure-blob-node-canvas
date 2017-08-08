@@ -1,4 +1,5 @@
 var express      = require('express');
+var app          = express();
 var path         = require('path');
 var favicon      = require('serve-favicon');
 var logger       = require('morgan');
@@ -8,11 +9,12 @@ var index        = require('./routes/index');
 var users        = require('./routes/users');
 
 // Socket.io requirements
-var app      = express();
 var http     = require('http');
-var socketIo = require('socket.io');
 var server   = http.createServer(app);
+var socketIo = require('socket.io');
 var io       = socketIo.listen(server);
+    server.listen(8080); 
+
 
 // view engine setup - HTML works fine out of the box
 app.set('views', path.join(__dirname, 'views'));
@@ -25,6 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+console.log("NODE: Server running on 127.0.0.1:8080");
 
 app.use('/', index);
 app.use('/users', users);
@@ -40,7 +43,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error   = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
   res.status(err.status || 500);
@@ -49,7 +52,7 @@ app.use(function(err, req, res, next) {
 
 //-------------------------------------------------------------
 // Socket.io connections
-io.on('connection', function (socket){   
+io.on('connection', function (socket) { 
   socket.on('error', function(e) {
     console.log(e);
   });
