@@ -7,6 +7,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var index        = require('./routes/index');
 var users        = require('./routes/users');
+                   require('dotenv').config(); // account vars
 
 // Socket.io requirements
 var http     = require('http');
@@ -14,7 +15,7 @@ var server   = http.createServer(app);
 var socketIo = require('socket.io');
 var io       = socketIo.listen(server);
     server.listen(8080); 
-var log     = console.log.bind(console);   
+var log      = console.log.bind(console);   
     log("NODE: Server running on 127.0.0.1:8080");
 
 
@@ -30,7 +31,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', index);
+app.use('/'     , index);
 app.use('/users', users);
 
 // catch 404 and forward to error handler
@@ -72,8 +73,8 @@ io.on('connection', function (socket) {
 }); 
 
 var azure     = require('azure-storage');
-// // Define these in settings.json
-// var storageAccountName = process.env.AZURE_STORAGE_ACCOUNT;
+// Define these in settings.json
+var storageAccountName = process.env.AZURE_STORAGE_ACCOUNT;
 // var connString         = process.env.AZURE_STORAGE_CONNECTION_STRING;
 // var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY;
 // var blobService        = azure.createBlobService();
@@ -82,7 +83,7 @@ var azure     = require('azure-storage');
 
 // function listBlobs () {
 //     blobService.listBlobsSegmented("dumpster", null, function(err, result) {
-//         if (err) {
+// //         if (err) {
 //             console.log("Couldn't list containers");
 //             console.error(err);
 //         } else {
