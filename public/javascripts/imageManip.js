@@ -1,6 +1,7 @@
 // save img: https://stackoverflow.com/questions/923885/capture-html-canvas-as-gif-jpg-png-pdf
 
-const getContext = ()  => document.getElementById('canvas').getContext('2d');
+const getCanvas  = () => document.getElementById('canvas');
+const getContext = ()  => getCanvas().getContext('2d'    );
 
 // It's better to use async image loading.
 const loadImage = url => {
@@ -19,18 +20,25 @@ const depict = options => {
   // Make a copy of the original
   const myOptions = Object.assign({}, options);
   return loadImage(myOptions.uri).then(img => {
-    ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.sw, myOptions.sh);
-    var image =  document.getElementById('canvas').toDataURL();
+    ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
+    //  getCanvas().height  = window.innerheight;
+    // var image =  getCanvas().toDataURL();
   });
 };
 
+let imgH = 50;
+let imgW = 50;
+let xPos = 15;
 // Must set coors on blobs to allow this to work.
 // Only increment Y value to offset images
+// Accept images of 50x50
 // SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
 const imgs = [
-  { uri: 'images/mj.jpg',  x: 15, y:  15, sw: 50, sh: 50 },
-  { uri: 'images/cat.jpg', x: 15, y:  80, sw: 50, sh: 50 },
-  { uri: 'images/mj.jpg',  x: 15, y: 145, sw: 50, sh: 50 }
+  { uri: 'images/mj.jpg',  x: xPos, y:  15, w: imgW, h: imgH },
+  { uri: 'images/cat.jpg', x: xPos, y:  80, w: imgW, h: imgH },
+  { uri: 'images/mj.jpg',  x: xPos, y: 145, w: imgW, h: imgH },
+  { uri: 'images/cat.jpg', x: xPos, y: 210, w: imgW, h: imgH },
+  { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
 ];
 
 imgs.forEach(depict);
