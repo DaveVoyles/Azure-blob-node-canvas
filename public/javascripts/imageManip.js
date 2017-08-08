@@ -1,9 +1,13 @@
 // save img: https://stackoverflow.com/questions/923885/capture-html-canvas-as-gif-jpg-png-pdf
 
 const getCanvas  = () => document.getElementById('canvas');
-const getContext = ()  => getCanvas().getContext('2d'    );
+const getContext = () => getCanvas().getContext('2d'     );
 
-// It's better to use async image loading.
+// Can hold 5 images - 1 for each day of the week
+getCanvas().height = 350;
+getCanvas().width  = 80;
+
+// It's better to use async image loading
 const loadImage = url => {
   return new Promise((resolve, reject) => {
     const img         = new Image();
@@ -21,8 +25,8 @@ const depict = options => {
   const myOptions = Object.assign({}, options);
   return loadImage(myOptions.uri).then(img => {
     ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
-    //  getCanvas().height  = window.innerheight;
-    // var image =  getCanvas().toDataURL();
+    let image =  getCanvas().toDataURL();
+    console.log(image);
   });
 };
 
@@ -30,8 +34,8 @@ let imgH = 50;
 let imgW = 50;
 let xPos = 15;
 // Must set coors on blobs to allow this to work.
-// Only increment Y value to offset images
-// Accept images of 50x50
+// Only increment Y value to offset images.
+// NOTE: Accept images of 50x50
 // SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
 const imgs = [
   { uri: 'images/mj.jpg',  x: xPos, y:  15, w: imgW, h: imgH },
