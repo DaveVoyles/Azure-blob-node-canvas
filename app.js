@@ -14,6 +14,8 @@ var server   = http.createServer(app);
 var socketIo = require('socket.io');
 var io       = socketIo.listen(server);
     server.listen(8080); 
+var log     = console.log.bind(console);   
+    log("NODE: Server running on 127.0.0.1:8080");
 
 
 // view engine setup - HTML works fine out of the box
@@ -27,7 +29,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-console.log("NODE: Server running on 127.0.0.1:8080");
 
 app.use('/', index);
 app.use('/users', users);
@@ -52,14 +53,17 @@ app.use(function(err, req, res, next) {
 
 //-------------------------------------------------------------
 // Socket.io connections
-io.on('connection', function (socket) { 
+io.on('connection', function (socket) {
+  
+  log('Socket connection etablished');
   socket.on('error', function(e) {
-    console.log(e);
+    log("connected: " + e);
   });
 
   socket.on('divimg', (payload) => {
+    log("socket.broadcast.emit('divimg', payload);");
     socket.broadcast.emit('divimg', payload);
-    console.log("received DIV");
+
   });
 
 

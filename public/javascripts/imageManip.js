@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Namespace to send / receive socket messages
     var socket  = io.connect();
+    var log     = console.log.bind(console);   
 
     // It's better to use async image loading
     const loadImage = url => {
@@ -29,8 +30,8 @@ document.addEventListener("DOMContentLoaded", function() {
     return loadImage(myOptions.uri).then(img => {
         ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
         let image =  getCanvas().toDataURL();
-        // socket.emit('divimg', image);
-        // console.log(image);
+        socket.emit('divimg', image);
+        log("emiting from client");
     });
     };
 
@@ -56,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function() {
     /** Saves image and redirects page to the image */
     function saveCanvasToImg(){
         var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"); //Convert image to 'octet-stream' (Just a download, really)
-        console.log(image);
+        log(image);
         window.location.href = image;
     }
 
