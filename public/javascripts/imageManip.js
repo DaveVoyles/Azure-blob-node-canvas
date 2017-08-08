@@ -16,12 +16,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // It's better to use async image loading
     const loadImage = url => {
-    return new Promise((resolve, reject) => {
-        const img         = new Image();
-            img.onload  = () => resolve(img);
-            img.onerror = () => reject(new Error(`load ${url} fail`));
-            img.src     = url;
-    });
+        return new Promise((resolve, reject) => {
+            const img       = new Image();
+                img.onload  = () => resolve(img);
+                img.onerror = () => reject(new Error(`load ${url} fail`));
+                img.src     = url;
+        });
     };
 
     /** Draw the image */
