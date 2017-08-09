@@ -9,12 +9,13 @@ document.addEventListener("DOMContentLoaded", function() {
     const getContext       = () => getCanvas().getContext('2d'     );
 
     // Namespace to send / receive socket messages
-    var socket = io.connect('http://localhost:8080', {reconnect: true});
+    var serverUrl = 'http://localhost:8080';
+    var socket    = io.connect(serverUrl, {reconnect: true});
         socket.on('connect', function(socket) {
-            log('CONNECTED to node server');
+            log('CONNECTED to node server:  ' + socket);
         });
+   
 
-    // It's better to use async image loading
     const loadImage = url => {
         return new Promise((resolve, reject) => {
             const img       = new Image();
@@ -32,11 +33,40 @@ document.addEventListener("DOMContentLoaded", function() {
         const myOptions = Object.assign({}, options);
         return loadImage(myOptions.uri).then(img => {
             ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
-            let image =  getCanvas().toDataURL();
-            socket.emit('divimg', image);
+             let image =  getCanvas().toDataURL();
+                  socket.emit('test', function (){});
+             var myImage = urltoFile(image, "myImage.png", 'image/png')
+                 .then(function(file){
+                    log(file);
+                    socket.emit('uploadToBlob', file.name);
+                    }) 
+            socket.emit('uploadToBlob', myImage);
             log("emiting from client");
         });
     };
+
+    /** Return a promise that resolves with a File instance
+     * @param {string}   url
+     * @param {string}   filename
+     * @param {MIMEType} mimeType
+     * @example
+     * urltoFile('data:image/png;base64,....', 'a.png', 'image/png')
+     * .then(function(file){
+     *     console.log(file);
+     * })
+     */ 
+    function urltoFile(url, filename, mimeType){
+        return (fetch(url)
+            .then(function(res){return res.arrayBuffer();})
+            .then(function(buf){return new File([buf], filename, {type:mimeType});})
+        );
+    };
+
+    //Usage example:
+    // urltoFile('data:image/png;base64,......', 'a.png', 'image/png')
+    // .then(function(file){
+    //     console.log(file);
+    // })
 
     let imgH = 50;
     let imgW = 50;
@@ -55,7 +85,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     imgs.forEach(depict);
 
-
+// -----------------------------------------------------
+// UN-USED FUNCTIONS
 
     /** Saves image and redirects page to the image */
     function saveCanvasToImg(){

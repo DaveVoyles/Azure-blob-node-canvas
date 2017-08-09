@@ -10,13 +10,22 @@ var users        = require('./routes/users');
                    require('dotenv').config(); // account vars
 
 // Socket.io requirements
+var port     = 8080;
 var http     = require('http');
-var server   = http.createServer(app);
-var socketIo = require('socket.io');
-var io       = socketIo.listen(server);
-    server.listen(8080); 
+// var server   = http.createServer(app);
+// var socketIo = require('socket.io');
+// var io       = socketIo.listen(server);
+//     server.listen(port);
+
+//Server side
+var io = require('socket.io').listen(8080);
+    io.sockets.on('connection',function(socket) {
+`console.log('a user connected');`
+});
 var log      = console.log.bind(console);   
-    log("NODE: Server running on 127.0.0.1:8080");
+    log("NODE: Server running on 127.0.0.1:" + port);
+
+
 
 // --------------------------------------------------------
 // App configuration
@@ -59,7 +68,7 @@ app.use(function(err, req, res, next) {
 //-------------------------------------------------------------
 // Socket.io connections
 io.on('connection', function (socket) {
-  log('Socket connection etablished');
+  log('Socket.io connection etablished');
 
   socket.on('error', function(e) {
     log("Client connected: " + e);
@@ -69,9 +78,14 @@ io.on('connection', function (socket) {
     log('Client disconnected: ' + e);
   });
 
-  socket.on('divimg', (payload) => {
-    log("socket.broadcast.emit('divimg', payload);");
-    socket.broadcast.emit('divimg', payload);
+  socket.on('test', function (params) {
+      log("test func");
+  });
+
+  socket.on('uploadToBlob', (payload) => {
+    log("socket.broadcast.emit('uploadToBlob', payload);");
+    socket.broadcast.emit('uploadToBlob', payload);
+     createBlockBlob(payload);
   });
 
 }); 
@@ -92,9 +106,6 @@ var sContainer = "dumpster";
 var sBlob      = "cat.jpg";
 var sNewName   = "newCat.jpg";
 
-
-listBlobs();
-getBlobToLocalFile();
 
 module.exports = app;
 // NOTE: Functions past here do not get called when app.js is loaded
@@ -134,9 +145,12 @@ function getBlobToLocalFile () {
     });    
 };
 
-blobService.createBlockBlobFromLocalFile(sContainer, sNewName, sNewName, function(error, result, response) {
-  if (!error) {
-      log("UPLOADING:: " + result.name);
-      // Upload worked
-  }
-});
+function createBlockBlob(payload){
+  blobService.createBlockBlobFromLocalFile(sContainer, sNewName, payload, function(error, result, response) {
+    if (!error) {
+        log("UPLOADING:: " + result.name);
+        // Upload worked
+    } if (error)
+      {log("ERROR: " + error);}
+  });
+};
