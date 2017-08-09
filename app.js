@@ -18,6 +18,9 @@ var io       = socketIo.listen(server);
 var log      = console.log.bind(console);   
     log("NODE: Server running on 127.0.0.1:8080");
 
+// --------------------------------------------------------
+// App configuration
+
 
 // view engine setup - HTML works fine out of the box
 app.set('views', path.join(__dirname, 'views'));
@@ -74,8 +77,8 @@ io.on('connection', function (socket) {
 }); 
 
 
-//-----------------------------------------------------------
-// Azure blob storage
+// -----------------------------------------------------
+// Blob Storage vars
 
 // Defined in .env file, using dotenv
 var azure              = require('azure-storage');
@@ -83,15 +86,27 @@ var storageAccountName = process.env.AZURE_STORAGE_ACCOUNT;
 var connString         = process.env.AZURE_STORAGE_CONNECTION_STRING;
 var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY;
 var blobService        = azure.createBlobService();
-var sContainer         = "dumpster";
 
 // Temp vars
 var sContainer = "dumpster";
 var sBlob      = "cat.jpg";
 var sNewName   = "newCat.jpg";
 
+
+listBlobs();
+getBlobToLocalFile();
+
+module.exports = app;
+// NOTE: Functions past here do not get called when app.js is loaded
+
+
+// -----------------------------------------------------
+// Blob Storage
+
+
+/** Returns a result segment containing a collection of blob items in the container.*/
 function listBlobs () {
-    blobService.listBlobsSegmented("dumpster", null, function(err, result) {
+    blobService.listBlobsSegmented(sContainer, null, function(err, result) {
          if (err) {
             log("Couldn't list containers");
             log.error(err);
@@ -101,9 +116,9 @@ function listBlobs () {
             log(result.continuationToken);
         }
     });
-}
-listBlobs();
+};
 
+/** Downloads a blob into a file. */
 function getBlobToLocalFile () {
     blobService.getBlobToLocalFile(sContainer, sBlob,sNewName, function(error, result, response) {
         if (!error) {
@@ -117,7 +132,11 @@ function getBlobToLocalFile () {
             // });
         }
     });    
-}
-  getBlobToLocalFile();
+};
 
-module.exports = app;
+blobService.createBlockBlobFromLocalFile(sContainer, sNewName, sNewName, function(error, result, response) {
+  if (!error) {
+      log("UPLOADING:: " + result.name);
+      // Upload worked
+  }
+});
