@@ -33,22 +33,19 @@ document.addEventListener("DOMContentLoaded", function() {
         const myOptions = Object.assign({}, options);
         return loadImage(myOptions.uri).then(img => {
             ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
-             let image =  getCanvas().toDataURL();
-                  socket.emit('test', function (){});
-             var myImage = urltoFile(image, "myImage.png", 'image/png')
-                 .then(function(file){
-                    log(file);
-                    socket.emit('uploadToBlob', file.name);
-                    }) 
-            socket.emit('uploadToBlob', myImage);
-            log("emiting from client");
+            let image   =  getCanvas().toDataURL();
+            let myImage = urltoFile(image, "myImage.png", 'image/png')
+                .then(function(file){
+                   log(file);
+                   socket.emit('sendFileToServer', file);
+                }) 
         });
     };
 
     /** Return a promise that resolves with a File instance
      * @param {string}   url
      * @param {string}   filename
-     * @param {MIMEType} mimeType
+     * @param {mimeType} mimeType
      * @example
      * urltoFile('data:image/png;base64,....', 'a.png', 'image/png')
      * .then(function(file){

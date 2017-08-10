@@ -1,3 +1,4 @@
+//@ts-check
 var express      = require('express');
 var app          = express();
 var path         = require('path');
@@ -7,42 +8,27 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var index        = require('./routes/index');
 var users        = require('./routes/users');
+var fs           = require('fs');
+var log          = console.log.bind(console);   
                    require('dotenv').config(); // account vars
 
 // Socket.io requirements
-var port     = 8080;
-var http     = require('http');
-// var server   = http.createServer(app);
-// var socketIo = require('socket.io');
-// var io       = socketIo.listen(server);
-//     server.listen(port);
-
-//Server side
-var io = require('socket.io').listen(8080);
-    io.sockets.on('connection',function(socket) {
-`console.log('a user connected');`
-});
-var log      = console.log.bind(console);   
-    log("NODE: Server running on 127.0.0.1:" + port);
-
+var port  = 8080;
+var io    = require('socket.io').listen(8080);
+log("NODE: Server running on 127.0.0.1:" + port);
 
 
 // --------------------------------------------------------
 // App configuration
 
-
 // view engine setup - HTML works fine out of the box
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/'     , index);
 app.use('/users', users);
 
@@ -78,14 +64,17 @@ io.on('connection', function (socket) {
     log('Client disconnected: ' + e);
   });
 
-  socket.on('test', function (params) {
-      log("test func");
+  socket.on('createBlockBlob', (payload) => {
+    log("socket.broadcast.emit('uploadToBlob', payload);");
+    // socket.broadcast.emit('uploadToBlob', payload);
+    createBlockBlob(payload);
   });
 
-  socket.on('uploadToBlob', (payload) => {
-    log("socket.broadcast.emit('uploadToBlob', payload);");
-    socket.broadcast.emit('uploadToBlob', payload);
-     createBlockBlob(payload);
+  // Receives file from web app
+  socket.on('sendFileToServer', function (payload){
+    fs.writeFile(__dirname + '/public/images/payload.png', payload,  function(err){
+        if (err) {throw err;}
+    })
   });
 
 }); 
