@@ -34,18 +34,18 @@ document.addEventListener("DOMContentLoaded", function() {
         return loadImage(myOptions.uri).then(img => {
             ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
             let image    =  getCanvas().toDataURL();
-            let mimeType = 'image/png';
-            let myImage  = urltoFile(image, "myImage.png", mimeType )
+            urltoFile(image, "myImage.png", 'image/png')
                 .then(function(file){
-                   socket.emit('sendFileToServer', file);
-                }) 
+                    // TODO: Add a date generator here to name the file
+                   socket.emit('sendFileToServer', file, "myImage.png");
+            }) 
         });
     };
 
     /** Return a promise that resolves with a File instance
      * @param {string}   url
      * @param {string}   filename
-     * @param {mimeType} mimeType
+     * @param {mimeType} mimeType - 'image/png'
      * @example
      * urltoFile('data:image/png;base64,....', 'a.png', 'image/png')
      * .then(function(file){
@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
      */ 
     function urltoFile(url, filename, mimeType){
         return (fetch(url)
+            .then( log('converting img Url to buffer'))
             .then(function(res){return res.arrayBuffer();})
             .then(function(buf){return new File([buf], filename, {type:mimeType});})
         );

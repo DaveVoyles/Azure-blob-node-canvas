@@ -70,14 +70,13 @@ io.on('connection', function (socket) {
     createBlockBlob(payload);
   });
 
-  // Receives file from web app
-  socket.on('sendFileToServer', function (payload){
-    fs.writeFile(__dirname + '/public/images/payload.png', payload,  function(err){
-        if (err) {throw err;}
-    })
+  // Receives file from web app & copies locally
+  socket.on('sendFileToServer', function (buf, sName){
+    writeFileLocally(sName, buf)
   });
 
 }); 
+
 
 
 // -----------------------------------------------------
@@ -101,7 +100,17 @@ module.exports = app;
 
 
 // -----------------------------------------------------
-// Blob Storage
+// Storage
+
+/** Writes a file to the /public/images folder
+ * @param {string} sImgName - Name of file to be saved. Needs to end in .png | .jpg
+ * @param {array}  buf      - Byte array buffer w/ image data       
+ */
+function writeFileLocally(sImgName, buf){
+        fs.writeFile(__dirname + '/public/images/' + sImgName, buf,  function(err){
+        if (err) {throw err;}
+    })
+}
 
 
 /** Returns a result segment containing a collection of blob items in the container.*/
