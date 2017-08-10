@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var serverUrl = 'http://localhost:8080';
     var socket    = io.connect(serverUrl, {reconnect: true});
         socket.on('connect', function(socket) {
-            log('CONNECTED to node server:  ' + socket);
+            log('CONNECTED to node server at: ' + serverUrl);
         });
    
 
@@ -25,18 +25,18 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     };
 
-    /** Draw the image */
+    /** Makes a copy of the original image, draws the images to the canvas, 
+     *  merges them & converts canvas to .png,  then sends to server.*/
     const depict = options => {
-        const ctx  = getContext();
-
-        // Make a copy of the original
+        const ctx       = getContext();
         const myOptions = Object.assign({}, options);
+
         return loadImage(myOptions.uri).then(img => {
             ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
-            let image   =  getCanvas().toDataURL();
-            let myImage = urltoFile(image, "myImage.png", 'image/png')
+            let image    =  getCanvas().toDataURL();
+            let mimeType = 'image/png';
+            let myImage  = urltoFile(image, "myImage.png", mimeType )
                 .then(function(file){
-                   log(file);
                    socket.emit('sendFileToServer', file);
                 }) 
         });
@@ -59,20 +59,15 @@ document.addEventListener("DOMContentLoaded", function() {
         );
     };
 
-    //Usage example:
-    // urltoFile('data:image/png;base64,......', 'a.png', 'image/png')
-    // .then(function(file){
-    //     console.log(file);
-    // })
-
     let imgH = 50;
     let imgW = 50;
     let xPos = 15;
-    // Must set coors on blobs to allow this to work.
-    // Only increment Y value to offset images.
-    // NOTE: Accept images of 50x50
-    // SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
-    const imgs = [
+    /** Must set coors on blobs to allow this to work.
+     * Only increment Y value to offset images.
+     * NOTE: Accepts images of 50x50
+     * SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
+     */    
+     const aImgs = [
     { uri: 'images/mj.jpg',  x: xPos, y:  15, w: imgW, h: imgH },
     { uri: 'images/cat.jpg', x: xPos, y:  80, w: imgW, h: imgH },
     { uri: 'images/mj.jpg',  x: xPos, y: 145, w: imgW, h: imgH },
@@ -80,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function() {
     { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
     ];
 
-    imgs.forEach(depict);
+    aImgs.forEach(depict);
 
 // -----------------------------------------------------
 // UN-USED FUNCTIONS
@@ -93,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     /** Saves image and downloads 
-     * @param id - Canvas
+     * @param id       - Canvas
      * @param fileName - What should you name this saved file?
      */
     function exportCanvasAsPNG(id, fileName) {
