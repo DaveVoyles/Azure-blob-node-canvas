@@ -1,4 +1,3 @@
-//@ts-check
 var express      = require('express');
 var app          = express();
 var path         = require('path');
@@ -71,8 +70,24 @@ io.on('connection', function (socket) {
   });
 
   // Receives file from web app & copies locally
+  var imgBuffData     = {};
+  var myName          = "";
+  var dir             = '';
+  var sNormalizedPath =__dirname + path.normalize('/public/images/');  
+
   socket.on('sendFileToServer', function (buf, sName){
-    writeFileLocally(sName, buf)
+   var newfile  = writeFileLocally(sName, buf);
+   var myName   = sName;
+    fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+        imgBuffData = data;
+        dir         = sNormalizedPath + sName;
+        //    log(dir);          
+        //    log(myName);
+        //    log(imgBuffData);
+        if (err) {throw err;}
+    });
+        // createBlockBlob(myName, dir);
+         createBlobFromStream(myName, buf, buf.length);
   });
 
 }); 
@@ -92,7 +107,6 @@ var blobService        = azure.createBlobService();
 // Temp vars
 var sContainer = "dumpster";
 var sBlob      = "cat.jpg";
-var sNewName   = "newCat.jpg";
 
 
 module.exports = app;
@@ -104,13 +118,12 @@ module.exports = app;
 
 /** Writes a file to the /public/images folder
  * @param {string} sImgName - Name of file to be saved. Needs to end in .png | .jpg
- * @param {array}  buf      - Byte array buffer w/ image data       
- */
+ * @param {array}  buf      - Byte array buffer w/ image data   */
 function writeFileLocally(sImgName, buf){
         fs.writeFile(__dirname + '/public/images/' + sImgName, buf,  function(err){
         if (err) {throw err;}
     })
-}
+};
 
 
 /** Returns a result segment containing a collection of blob items in the container.*/
@@ -143,12 +156,26 @@ function getBlobToLocalFile () {
     });    
 };
 
-function createBlockBlob(payload){
-  blobService.createBlockBlobFromLocalFile(sContainer, sNewName, payload, function(error, result, response) {
-    if (!error) {
-        log("UPLOADING:: " + result.name);
-        // Upload worked
-    } if (error)
-      {log("ERROR: " + error);}
-  });
+function createBlobFromStream(sName, stream){
+    blobService.createBlockBlobFromStream(sContainer, sName, stream, stream.length, function(error) {if (error){log(error);}});
+};
+
+function createBlockBlob(sName, dir){
+    if (sName === null || undefined) {return;};
+    if (dir   === null || undefined) {return;};
+    log("sName: "+ sName);
+    log('dir: ' + dir );
+    var sName = "myImage.png";
+    var dir = __dirname + path.normalize('/public/images/' + sName);  
+    blobService.createBlockBlobFromLocalFile(sContainer, sName, dir, function(error, result, response) {
+        if (!error) {
+            log("UPLOADING:: " + result.name + " \n from: " + dir);
+            // File exists
+            fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+                log("data: " + data);
+            });
+        } if (error) {
+            log("ERROR:      " + error      );
+        }
+    });
 };

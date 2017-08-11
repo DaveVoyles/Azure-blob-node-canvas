@@ -25,9 +25,10 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     };
 
+    
     /** Makes a copy of the original image, draws the images to the canvas, 
      *  merges them & converts canvas to .png,  then sends to server.*/
-    const depict = options => {
+     const depict = options => {
         const ctx       = getContext();
         const myOptions = Object.assign({}, options);
 
@@ -38,9 +39,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 .then(function(file){
                     // TODO: Add a date generator here to name the file
                    socket.emit('sendFileToServer', file, "myImage.png");
-            }) 
+                   log('sending file');
+            })
         });
     };
+
+    /*Creates an image based on convertCanvasToImage.
+     * Canvas -> Image -> Bytes
+     * @return {Uint8Array} Bytes from the newly converted canvas. */
+    function ConvertImgToBytes(image) {
+        var buffer = new ArrayBuffer(image.data.length);
+        var bytes  = new Uint8Array(buffer);
+
+        for (var i=0; i<bytes.length; i++) {
+            bytes[i] = image.data[i];
+        }
+        debug.log("ConvertImgToBytes:" );
+        Console.log(bytes);
+
+        return bytes;
+    }
 
     /** Return a promise that resolves with a File instance
      * @param {string}   url
