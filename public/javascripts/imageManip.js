@@ -39,12 +39,12 @@ document.addEventListener("DOMContentLoaded", function() {
             // Strip type from base64 string | data:image/png;base64
             var base64result = canvasImage.split(',')[1];
             var byteArr      = convertB64ToByteArr(base64result);
-            // urltoFile(image, "myImage.png", 'image/png')
-            //     .then(function(file){
-            //         // TODO: Add a date generator here to name the file
-            //        socket.emit('sendFileToServer', file, "myImage.png");
-            //        log('sending file');
-            // })
+            urltoFile(byteArr, "myImage.png", 'image/png')
+                .then(function(file){
+                    // TODO: Add a date generator here to name the file
+                   socket.emit('sendFileToServer', file, "myImage.png");
+                   log('sending file');
+            })
         });
     };
 
@@ -65,23 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return byteArray;
     };
 
-    // TODO: May not need this
-    /**Creates an image based on convertCanvasToImage.
-     * Canvas -> Image -> Bytes
-     * @returns  {Uint8Array} Bytes from the newly converted canvas. */
-    function ConvertImgToBytes(image) {
-        var buffer = new ArrayBuffer(image.length);
-        var bytes  = new Uint8Array(buffer);
-
-        for (var i=0; i<bytes.length; i++) {
-            bytes[i] = image.data[i];
-        }
-        debug.log("ConvertImgToBytes:" );
-        Console.log(bytes);
-
-        return bytes;
-    }
-
+    
     /** Return a promise that resolves with a File instance
      * @param {string}   url
      * @param {string}   filename
