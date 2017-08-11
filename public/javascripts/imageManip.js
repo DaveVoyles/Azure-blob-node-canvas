@@ -34,21 +34,43 @@ document.addEventListener("DOMContentLoaded", function() {
 
         return loadImage(myOptions.uri).then(img => {
             ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
-            let image    =  getCanvas().toDataURL();
-            urltoFile(image, "myImage.png", 'image/png')
-                .then(function(file){
-                    // TODO: Add a date generator here to name the file
-                   socket.emit('sendFileToServer', file, "myImage.png");
-                   log('sending file');
-            })
+            let canvasImage    =  getCanvas().toDataURL();
+            log(canvasImage);
+            // Strip type from base64 string | data:image/png;base64
+            var base64result = canvasImage.split(',')[1];
+            var byteArr      = convertB64ToByteArr(base64result);
+            // urltoFile(image, "myImage.png", 'image/png')
+            //     .then(function(file){
+            //         // TODO: Add a date generator here to name the file
+            //        socket.emit('sendFileToServer', file, "myImage.png");
+            //        log('sending file');
+            // })
         });
     };
 
-    /*Creates an image based on convertCanvasToImage.
+    /** Converts a base64 string to a byte array
+     * @param {string} base64String - Converted from base64 string of image data, WITHOUT the type. 
+     * @returns {Uint8Array} A byte array */
+    function convertB64ToByteArr(base64String) {
+        // decode a base64-encoded string into a new string with a character for each byte of the binary data
+        var byteCharacters = atob(base64String);
+        // Each character's code point (charCode) will be the value of the byte. We can create an array of byte values
+        var byteNumbers = new Array(byteCharacters.length);
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        // convert this array of byte values into a real typed byte array
+        var byteArray = new Uint8Array(byteNumbers);
+
+        return byteArray;
+    };
+
+    // TODO: May not need this
+    /**Creates an image based on convertCanvasToImage.
      * Canvas -> Image -> Bytes
-     * @return {Uint8Array} Bytes from the newly converted canvas. */
+     * @returns  {Uint8Array} Bytes from the newly converted canvas. */
     function ConvertImgToBytes(image) {
-        var buffer = new ArrayBuffer(image.data.length);
+        var buffer = new ArrayBuffer(image.length);
         var bytes  = new Uint8Array(buffer);
 
         for (var i=0; i<bytes.length; i++) {
