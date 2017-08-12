@@ -75,7 +75,9 @@ io.on('connection', function (socket) {
   var dir             = '';
   var sNormalizedPath =__dirname + path.normalize('/public/images/');  
 
-  socket.on('sendFileToServer', function (buf, sName){
+  socket.on('sendBufToServer', function (buf, sName){
+      log('file received');
+      log(buf);
       var newfile  = writeFileLocally(sName, buf);
 //    var myName   = sName;
 //     fs.readFile(__dirname + '/public/images/' + sName, function(err,data){

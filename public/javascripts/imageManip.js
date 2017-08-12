@@ -13,8 +13,8 @@ function runScript() {
     "use strict";
 
     const getCanvas        = () => document.getElementById('canvas');
-        getCanvas().height = 350;
-        getCanvas().width  = 80;
+          getCanvas().height = 350;
+          getCanvas().width  =  80;
     const getContext       = () => getCanvas().getContext('2d'     );
 
     const loadImage = url => {
@@ -26,6 +26,8 @@ function runScript() {
         });
     };
 
+    let iterator      = 0;
+    let nMaxImgInArr  = 5;
 
     /** Draw all images to canvas. 
      * @param {array} currentValue - The value of the current element being processed in the array.
@@ -35,18 +37,23 @@ function runScript() {
     function drawToCanvas (currentValue, index, array) {
         return loadImage(currentValue.uri).then(img => {
             getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
-            if(index === array.length-1) {
-                convertB64ToByteArr();
+            iterator++; 
+            // # of images receives from server. If not hard-coded, this func gets called out of order, 
+            // sent to server before canvas has completed loading images.
+            if (iterator === nMaxImgInArr) { 
+              let scanvasB64  = getCanvas().toDataURL()
+              let buf         =  convertB64ToByteArr(canvasImage);
+              socket.emit('sendFBufToServer', buf);
             }
         });
     };
+    drawToCanvas()
 
-
-    /** Converts a base64 string to a byte array
-     * @returns {Uint8Array} A byte array 
+    /** Converts a base64 string to a byte array.
+     * @param {string} sCanvasB64 - Base64 string representation of the current Canvas element.
+     * @returns {Uint8Array} A byte array. 
      */
-    function convertB64ToByteArr() {
-        let canvasImage    = getCanvas().toDataURL();
+    function convertB64ToByteArr(sCanvasB64) {
         var base64String   = canvasImage.split(',')[1];
         // decode a base64-encoded string into a new string with a character for each byte of the binary data
         var byteCharacters = atob(base64String);
@@ -60,6 +67,11 @@ function runScript() {
         
         return byteArray;
     };
+
+
+    function sendFileToServer(file) {
+        socket.emit('sendFileToServer', file);
+    }
 
 
     let imgH = 50;
@@ -109,7 +121,7 @@ function runScript() {
         document.body.removeChild(dlLink);
     };
 
-    
+
     /** Return a promise that resolves with a File instance
      * @param {string}   url
      * @param {string}   filename
