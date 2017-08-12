@@ -41,9 +41,9 @@ function runScript() {
             // # of images receives from server. If not hard-coded, this func gets called out of order, 
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
-              let scanvasB64  = getCanvas().toDataURL()
-              let buf         =  convertB64ToByteArr(canvasImage);
-              socket.emit('sendFBufToServer', buf);
+              let sCanvasB64  = getCanvas().toDataURL()
+              let buf         =  convertB64ToByteArr(sCanvasB64);
+              socket.emit('sendBufToServer', buf);
             }
         });
     };
@@ -54,7 +54,7 @@ function runScript() {
      * @returns {Uint8Array} A byte array. 
      */
     function convertB64ToByteArr(sCanvasB64) {
-        var base64String   = canvasImage.split(',')[1];
+        var base64String   = sCanvasB64.split(',')[1];
         // decode a base64-encoded string into a new string with a character for each byte of the binary data
         var byteCharacters = atob(base64String);
         // Each character's code point (charCode) will be the value of the byte. We can create an array of byte values
@@ -69,9 +69,6 @@ function runScript() {
     };
 
 
-    function sendFileToServer(file) {
-        socket.emit('sendFileToServer', file);
-    }
 
 
     let imgH = 50;
