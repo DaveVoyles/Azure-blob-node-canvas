@@ -62,24 +62,6 @@ function runScript() {
     };
 
 
-    /** Return a promise that resolves with a File instance
-     * @param {string}   url
-     * @param {string}   filename
-     * @param {mimeType} mimeType - 'image/png'
-     * @example
-     * urltoFile('data:image/png;base64,....', 'a.png', 'image/png')
-     * .then(function(file){
-     *     console.log(file);
-     * })
-     */ 
-    function urltoFile(url, filename, mimeType){
-        return (fetch(url)
-            .then( log('converting img Url to buffer'))
-            .then(function(res){return res.arrayBuffer();})
-            .then(function(buf){return new File([buf], filename, {type:mimeType});})
-        );
-    };
-
     let imgH = 50;
     let imgW = 50;
     let xPos = 15;
@@ -125,6 +107,25 @@ function runScript() {
         document.body.appendChild(dlLink);
         dlLink.click();
         document.body.removeChild(dlLink);
-    }
+    };
+
+    
+    /** Return a promise that resolves with a File instance
+     * @param {string}   url
+     * @param {string}   filename
+     * @param {mimeType} mimeType - 'image/png'
+     * @example
+     * urltoFile('data:image/png;base64,....', 'a.png', 'image/png')
+     * .then(function(file){
+     *     console.log(file);
+     * })
+     */ 
+    function urltoFile(url, filename, mimeType){
+        return (fetch(url)
+            .then( log('converting img Url to buffer'))
+            .then(function(res){return res.arrayBuffer();})
+            .then(function(buf){return new File([buf], filename, {type:mimeType});})
+        );
+    };
 
 };
