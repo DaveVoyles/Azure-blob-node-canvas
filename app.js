@@ -76,18 +76,18 @@ io.on('connection', function (socket) {
   var sNormalizedPath =__dirname + path.normalize('/public/images/');  
 
   socket.on('sendFileToServer', function (buf, sName){
-   var newfile  = writeFileLocally(sName, buf);
-   var myName   = sName;
-    fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-        imgBuffData = data;
-        dir         = sNormalizedPath + sName;
-        //    log(dir);          
-        //    log(myName);
-        //    log(imgBuffData);
-        if (err) {throw err;}
-    });
-        // createBlockBlob(myName, dir);
-         createBlobFromStream(myName, buf, buf.length);
+      var newfile  = writeFileLocally(sName, buf);
+//    var myName   = sName;
+//     fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+//         imgBuffData = data;
+//         dir         = sNormalizedPath + sName;
+//         //    log(dir);          
+//         //    log(myName);
+//         //    log(imgBuffData);
+//         if (err) {throw err;}
+//     });
+//         // createBlockBlob(myName, dir);
+//          createBlobFromStream(myName, buf, buf.length);
   });
 
 }); 
@@ -159,6 +159,7 @@ function getBlobToLocalFile () {
 function createBlobFromStream(sName, stream){
     blobService.createBlockBlobFromStream(sContainer, sName, stream, stream.length, function(error) {if (error){log(error);}});
 };
+
 
 function createBlockBlob(sName, dir){
     if (sName === null || undefined) {return;};

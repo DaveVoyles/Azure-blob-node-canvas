@@ -1,71 +1,67 @@
+    /* Namespace to send / receive socket messages.
+     * Call this first to establish connection. When completed, calls the rest of the scripts to execute. */
+    const log     = console.log.bind(console);  
+    var serverUrl = 'http://localhost:8080';
+    var socket    = io.connect(serverUrl, {reconnect: true});
+        socket.on('connect', function(socket) {
+            log('CONNECTED to node server at: ' + serverUrl);
+            runScript();
+        });
+
 // save img: https://stackoverflow.com/questions/923885/capture-html-canvas-as-gif-jpg-png-pdf
-document.addEventListener("DOMContentLoaded", function() {
+function runScript() {
     "use strict";
 
-    const log              = console.log.bind(console);   
     const getCanvas        = () => document.getElementById('canvas');
         getCanvas().height = 350;
         getCanvas().width  = 80;
     const getContext       = () => getCanvas().getContext('2d'     );
 
-    // Namespace to send / receive socket messages
-    var serverUrl = 'http://localhost:8080';
-    var socket    = io.connect(serverUrl, {reconnect: true});
-        socket.on('connect', function(socket) {
-            log('CONNECTED to node server at: ' + serverUrl);
-        });
-   
-
     const loadImage = url => {
         return new Promise((resolve, reject) => {
-            const img       = new Image();
-                img.onload  = () => resolve(img);
-                img.onerror = () => reject(new Error(`load ${url} fail`));
-                img.src     = url;
+            const img         = new Image();
+                  img.onload  = () => resolve(img);
+                  img.onerror = () => reject(new Error(`load ${url} fail`));
+                  img.src     = url;
         });
     };
 
-    
-    /** Makes a copy of the original image, draws the images to the canvas, 
-     *  merges them & converts canvas to .png,  then sends to server.*/
-     const depict = options => {
-        const ctx       = getContext();
-        const myOptions = Object.assign({}, options);
 
-        return loadImage(myOptions.uri).then(img => {
-            ctx.drawImage(img, myOptions.x, myOptions.y, myOptions.w, myOptions.h);
-            let canvasImage    =  getCanvas().toDataURL();
-            log(canvasImage);
-            // Strip type from base64 string | data:image/png;base64
-            var base64result = canvasImage.split(',')[1];
-            var byteArr      = convertB64ToByteArr(base64result);
-            urltoFile(byteArr, "myImage.png", 'image/png')
-                .then(function(file){
-                    // TODO: Add a date generator here to name the file
-                   socket.emit('sendFileToServer', file, "myImage.png");
-                   log('sending file');
-            })
+    /** Draw all images to canvas. 
+     * @param {array} currentValue - The value of the current element being processed in the array.
+     * @param {int}   index        - The index of the current element being processed in the array.
+     * @param {array} array        - The array that forEach() is being applied to.
+    */
+    function drawToCanvas (currentValue, index, array) {
+        return loadImage(currentValue.uri).then(img => {
+            getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
+            if(index === array.length-1) {
+                convertB64ToByteArr();
+            }
         });
     };
+
 
     /** Converts a base64 string to a byte array
-     * @param {string} base64String - Converted from base64 string of image data, WITHOUT the type. 
-     * @returns {Uint8Array} A byte array */
-    function convertB64ToByteArr(base64String) {
+     * @returns {Uint8Array} A byte array 
+     */
+    function convertB64ToByteArr() {
+        let canvasImage    = getCanvas().toDataURL();
+        var base64String   = canvasImage.split(',')[1];
         // decode a base64-encoded string into a new string with a character for each byte of the binary data
         var byteCharacters = atob(base64String);
         // Each character's code point (charCode) will be the value of the byte. We can create an array of byte values
-        var byteNumbers = new Array(byteCharacters.length);
+        var byteNumbers    = new Array(byteCharacters.length);
         for (var i = 0; i < byteCharacters.length; i++) {
             byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
         // convert this array of byte values into a real typed byte array
         var byteArray = new Uint8Array(byteNumbers);
-
+        
         return byteArray;
     };
 
-    
+
     /** Return a promise that resolves with a File instance
      * @param {string}   url
      * @param {string}   filename
@@ -93,14 +89,14 @@ document.addEventListener("DOMContentLoaded", function() {
      * SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
      */    
      const aImgs = [
-    { uri: 'images/mj.jpg',  x: xPos, y:  15, w: imgW, h: imgH },
-    { uri: 'images/cat.jpg', x: xPos, y:  80, w: imgW, h: imgH },
-    { uri: 'images/mj.jpg',  x: xPos, y: 145, w: imgW, h: imgH },
-    { uri: 'images/cat.jpg', x: xPos, y: 210, w: imgW, h: imgH },
-    { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
+        { uri: 'images/mj.jpg',  x: xPos, y:  15, w: imgW, h: imgH },
+        { uri: 'images/cat.jpg', x: xPos, y:  80, w: imgW, h: imgH },
+        { uri: 'images/mj.jpg',  x: xPos, y: 145, w: imgW, h: imgH },
+        { uri: 'images/cat.jpg', x: xPos, y: 210, w: imgW, h: imgH },
+        { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
     ];
 
-    aImgs.forEach(depict);
+    aImgs.forEach(drawToCanvas);
 
 // -----------------------------------------------------
 // UN-USED FUNCTIONS
@@ -131,4 +127,4 @@ document.addEventListener("DOMContentLoaded", function() {
         document.body.removeChild(dlLink);
     }
 
-});
+};
