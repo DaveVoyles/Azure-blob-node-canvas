@@ -47,7 +47,7 @@ function runScript() {
             }
         });
     };
-    drawToCanvas()
+
 
     /** Converts a base64 string to a byte array.
      * @param {string} sCanvasB64 - Base64 string representation of the current Canvas element.
