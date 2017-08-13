@@ -19,7 +19,7 @@ function runScript() {
 
 
     /**
-     *  Loads images from a url.
+     * Loads images from a url.
      * @param {string} url - Addresss image is located at. 
      */
     function loadImg(url) {
@@ -36,7 +36,7 @@ function runScript() {
     let nMaxImgInArr  = 5;
 
     /**
-     *  Draw all images to canvas. 
+     * Draw all images to canvas. 
      * @param {array} currentValue - The value of the current element being processed in the array.
      * @param {int}   index        - The index of the current element being processed in the array.
      * @param {array} array        - The array that forEach() is being applied to.
@@ -57,7 +57,7 @@ function runScript() {
 
 
     /**
-     *  Converts a base64 string to a byte array.
+     * Converts a base64 string to a byte array.
      * @param {string} sCanvasB64 - Base64 string representation of the current Canvas element.
      * @returns {Uint8Array} A byte array. 
      */
@@ -81,7 +81,7 @@ function runScript() {
     let imgW = 50;
     let xPos = 15;
     /**
-     *  Must set coors on blobs to allow this to work.
+     * Must set coors on blobs to allow this to work.
      * Only increment Y value to offset images.
      * NOTE: Accepts images of 50x50
      * SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
