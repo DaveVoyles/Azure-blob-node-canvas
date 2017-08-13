@@ -8,6 +8,7 @@ var bodyParser   = require('body-parser');
 var index        = require('./routes/index');
 var users        = require('./routes/users');
 var fs           = require('fs');
+var Readable     = require('stream').Readable;
 var log          = console.log.bind(console);   
                    require('dotenv').config(); // account vars
 
@@ -75,15 +76,20 @@ io.on('connection', function (socket) {
   var dir             = '';
   var sNormalizedPath =__dirname + path.normalize('/public/images/');  
 
-  socket.on('sendBufToServer', function (buf, sName){
+  socket.on('sendBufToServer', function (buf){
       log('file received');
-      log(buf);
-      var newfile  = writeFileLocally(sName, buf);
+       var rs = new Readable;
+       log(buf);
+    //   rs.push(buf);
+    //   log(rs);
+    //    createBlobFromStream("testName.png", buf);
+
+    //   var newfile  = writeFileLocally(sName, buf);
 //    var myName   = sName;
 //     fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
 //         imgBuffData = data;
 //         dir         = sNormalizedPath + sName;
-//         //    log(dir);          
+//         //    log(dir);          n
 //         //    log(myName);
 //         //    log(imgBuffData);
 //         if (err) {throw err;}
@@ -153,13 +159,13 @@ function getBlobToLocalFile () {
             //             context.log("UpLOADING:: " + result.name);
             //         // Upload worked
             //     }
-            // });
+            // });node
         }
     });    
 };
 
 function createBlobFromStream(sName, stream){
-    blobService.createBlockBlobFromStream(sContainer, sName, stream, stream.length, function(error) {if (error){log(error);}});
+    blobService.createBlockBlobFromStream(sContainer, "myName.png", stream, stream.length, function(error) {if (error){log(error);}});
 };
 
 
