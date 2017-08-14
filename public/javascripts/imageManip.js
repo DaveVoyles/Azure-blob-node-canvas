@@ -15,7 +15,7 @@ function runScript() {
     const getCanvas        = () => document.getElementById('canvas');
           getCanvas().height = 350;
           getCanvas().width  =  80;
-    const getContext       = () => getCanvas().getContext('2d'     );
+    const getContext       = () => getCanvas().getContext ('2d'    );
 
 
     /**
@@ -57,11 +57,12 @@ function runScript() {
                     .then(function(file){ 
                         socket.emit('sendFileToServer', file);
                 })       
-                // sendAsB64String(canvasImgUrl);
-                // sendAsByteArr(canvasImgUrl);
+                 //sendAsB64String(canvasImgUrl);
+                 //sendAsByteArr(canvasImgUrl);
             }
         });
     };
+
 
     /**
      * Converts a canvas URL to a base64 string and emits to node server
@@ -124,6 +125,27 @@ function runScript() {
 
     aImgs.forEach(drawToCanvas);
 
+
+    /** 
+     * Return a promise that resolves with a File instance
+     * @param {string}   url
+     * @param {string}   filename
+     * @param {mimeType} mimeType - 'image/png'
+     * @example
+     * urltoFile('data:image/png;base64,....', 'a.png', 'image/png')
+     * .then(function(file){
+     *     console.log(file);
+     * })
+     */ 
+    function urltoFile(url, filename, mimeType){
+        return (fetch(url)
+            // .then( log('converting img Url to buffer'))
+            .then(function(res){return res.arrayBuffer();})
+            .then(function(buf){return new File([buf], filename, {type:mimeType});})
+        );
+    };
+
+
 // -----------------------------------------------------
 // UN-USED FUNCTIONS
 
@@ -152,26 +174,6 @@ function runScript() {
         document.body.appendChild(dlLink);
         dlLink.click();
         document.body.removeChild(dlLink);
-    };
-
-
-    /** 
-     * Return a promise that resolves with a File instance
-     * @param {string}   url
-     * @param {string}   filename
-     * @param {mimeType} mimeType - 'image/png'
-     * @example
-     * urltoFile('data:image/png;base64,....', 'a.png', 'image/png')
-     * .then(function(file){
-     *     console.log(file);
-     * })
-     */ 
-    function urltoFile(url, filename, mimeType){
-        return (fetch(url)
-            .then( log('converting img Url to buffer'))
-            .then(function(res){return res.arrayBuffer();})
-            .then(function(buf){return new File([buf], filename, {type:mimeType});})
-        );
     };
 
 };

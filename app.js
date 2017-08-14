@@ -9,6 +9,8 @@ var index        = require('./routes/index');
 var users        = require('./routes/users');
 var fs           = require('fs');
 var Readable     = require('stream').Readable;
+var stream       = require('stream');
+
 var log          = console.log.bind(console);   
                    require('dotenv').config(); // account vars
 
@@ -74,6 +76,7 @@ io.on('connection', function (socket) {
   var myName          = "";
   var dir             = '';
   var sNormalizedPath =__dirname + path.normalize('/public/images/');  
+  var sName = "myImage.png";
 
     // -- B64 STRING
     socket.on('sendB64ToServer', function(b64String) {
@@ -102,22 +105,30 @@ io.on('connection', function (socket) {
     // -- FILE
     socket.on('sendFileToServer',  function (buf){
         log('File received from client');
-        log(buf);
+
         sName = "myImage.png";
+        const readable = new Readable()
+        readable._read = function () {} // _read is required but you can noop it
+        readable.push(buf)
+        readable.push(null);
+        readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "myImage.png"));
+
+        // blobService.createWriteStreamToBlockBlob("dumpster", "myImage.png");
+        // blobService.createBlockBlobFromStream("dumpster", "myImage.png", readable, buf.length, null);
 
         // Save locally
-        writeFileLocally(sName, buf);
-        var myName   = sName;
-        var dir      = sNormalizedPath + sName;
+        // writeFileLocally(sName, buf);
+        // var myName   = sName;
+        // var dir      = sNormalizedPath + sName;
      
-        // Read back
-         fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-             imgBuffData = data;         
-             //    log(myName);
-             //    log(imgBuffData);
-             if (err) {throw err;}
-         });
-              createBlockBlob(myName, dir);
+        // // Read back
+        //  fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+        //      imgBuffData = data;         
+        //      //    log(myName);
+        //      //    log(imgBuffData);
+        //      if (err) {throw err;}
+        //  });
+            //   createBlockBlob(myName, dir);
     });
 
 
@@ -128,16 +139,16 @@ io.on('connection', function (socket) {
     var newfile  = writeFileLocally(sName, buf);
     var myName   = sName;
 
-        fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-            imgBuffData = data;
-            dir         = sNormalizedPath + sName;
-            //    log(dir);          
-            //    log(myName);
-            //    log(imgBuffData);
-            if (err) {throw err;}
-        });
-            // createBlockBlob(myName, dir);
-            createBlobFromStream(myName, buf, buf.length);
+    fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+        imgBuffData = data;
+        dir         = sNormalizedPath + sName;
+        //    log(dir);          
+        //    log(myName);
+        //    log(imgBuffData);
+        if (err) {throw err;}
+    });
+        // createBlockBlob(myName, dir);
+        // createBlobFromStream(myName, buf, buf.length);
     });
 
 }); 
@@ -218,13 +229,18 @@ function createBlobFromStream(sName, stream){
 function createBlockBlob(sName, dir){
     log("sName: "+ sName);
     log('dir: '  + dir  );
+    //File exists - check here to be sure 
+    fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+          log("data: " + data);
+    });
     blobService.createBlockBlobFromLocalFile(sContainer, sName, dir, function(error, result, response) {
         if (!error) {
-            log("UPLOADING: " + result.name + " \n from: " + dir);
-            // File exists
-            fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-                // log("data: " + data);
-            });
+            // log(result);
+            // log(response);
+            // log("UPLOADING: " + result.name + " \n from: " + dir);
+            // URL containing the image works, but file is empty?
+            var url =  blobService.getUrl(sContainer, sName)
+            log (url);
         } if (error) {
             log("ERROR:      " + error      );
         }
