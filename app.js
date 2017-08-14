@@ -65,8 +65,7 @@ io.on('connection', function (socket) {
   });
 
   socket.on('createBlockBlob', (payload) => {
-    log("socket.broadcast.emit('uploadToBlob', payload);");
-    // socket.broadcast.emit('uploadToBlob', payload);
+    log("Creating block blob");
     createBlockBlob(payload);
   });
 
@@ -81,9 +80,9 @@ io.on('connection', function (socket) {
         log('b64String received from client');
         const buffer   = new Buffer(b64String, 'base64')
         const readable = new Readable()
-        readable._read = function () {} // _read is required but you can noop it
-        readable.push(buffer);
-        readable.pipe(
+              readable._read = function () {} // _read is required but you can noop it
+              readable.push(buffer);
+              readable.pipe(
             blobService.createWriteStreamToBlockBlob("dumpster","myNewImage.png", 
                 function (err, result, res) {
                     if (err) {
@@ -98,6 +97,7 @@ io.on('connection', function (socket) {
                 })
             )
     });
+
 
     // -- FILE
     socket.on('sendFileToServer',  function (buf){
@@ -121,7 +121,7 @@ io.on('connection', function (socket) {
     });
 
 
-    // -- BUFFER
+    // -- BYTE ARRAY
     socket.on('sendByteArrToServer', function (buf){
         log('Buffer array received from client');
 
@@ -131,7 +131,7 @@ io.on('connection', function (socket) {
         fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
             imgBuffData = data;
             dir         = sNormalizedPath + sName;
-            //    log(dir);          n
+            //    log(dir);          
             //    log(myName);
             //    log(imgBuffData);
             if (err) {throw err;}

@@ -37,7 +37,7 @@ function runScript() {
     let nMaxImgInArr  = 5;
 
     /**
-     * Draw all images to canvas. 
+     * Draw all imaAdges to canvas. 
      * @param {array} currentValue - The value of the current element being processed in the array.
      * @param {int}   index        - The index of the current element being processed in the array.
      * @param {array} array        - The array that forEach() is being applied to.
@@ -111,6 +111,7 @@ function runScript() {
      * Must set coors on blobs to allow this to work.
      * Only increment Y value to offset images.
      * NOTE: Accepts images of 50x50
+     * TODO: Replace w/ a call to blob storage to retrieve images from Azure
      * SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
      */    
      const aImgs = [
