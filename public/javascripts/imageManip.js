@@ -48,11 +48,37 @@ function runScript() {
             // # of images receives from server. If not hard-coded, this func gets called out of order, 
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
-              let sCanvasB64  = getCanvas().toDataURL()
-              let buf         =  convertB64ToByteArr(sCanvasB64);
-              socket.emit('sendBufToServer', buf);
+                let canvasImgUrl =  getCanvas().toDataURL(); 
+
+                // NOTE: You only need to use one (1) of these options, depending on the format you
+                // want the server to process the image.
+                urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
+                    .then(function(file){ 
+                        socket.emit('sendFileToServer', file);
+                })       
+                // sendAsB64String(canvasImgUrl);
+                // sendAsByteArr(canvasImgUrl);
             }
         });
+    };
+
+    /**
+     * Converts a canvas URL to a base64 string and emits to node server
+     * @param {string} canvasImgUrl - canvas.toDataURL 
+     */
+    function sendAsB64String (canvasImgUrl) {
+         let base64String   = canvasImgUrl.split(',')[1];
+         socket.emit('sendB64ToServer', base64String);
+    };
+
+
+    /**
+     * Converts canvas URL to a byte array and emits to node server
+     * @param {string} canvasImgUrl - canvas.toDataURL 
+     */
+    function sendAsByteArr(canvasImgUrl){ 
+        let buf         =  convertB64ToByteArr(canvasImgUrl);
+        socket.emit('sendByteArrToServer', buf);
     };
 
 
@@ -100,7 +126,7 @@ function runScript() {
 // UN-USED FUNCTIONS
 
     /** Saves image and redirects page to the image */
-    function saveCanvasToImg(){
+    function saveCanvasToImgAndRedirect(){
         var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"); //Convert image to 'octet-stream' (Just a download, really)
         log(image);
         window.location.href = image;

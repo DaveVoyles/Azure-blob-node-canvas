@@ -76,27 +76,69 @@ io.on('connection', function (socket) {
   var dir             = '';
   var sNormalizedPath =__dirname + path.normalize('/public/images/');  
 
-  socket.on('sendBufToServer', function (buf){
-      log('file received');
-       var rs = new Readable;
-       log(buf);
-    //   rs.push(buf);
-    //   log(rs);
-    //    createBlobFromStream("testName.png", buf);
+    // -- B64 STRING
+    socket.on('sendB64ToServer', function(b64String) {
+        log('b64String received from client');
+        const buffer   = new Buffer(b64String, 'base64')
+        const readable = new Readable()
+        readable._read = function () {} // _read is required but you can noop it
+        readable.push(buffer);
+        readable.pipe(
+            blobService.createWriteStreamToBlockBlob("dumpster","myNewImage.png", 
+                function (err, result, res) {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                    console.log(result);
+                    console.log(res);
+                }
+                })
+                .on("data", function (chunk){
+                    console.log("get data : " + chunk);
+                })
+            )
+    });
 
-    //   var newfile  = writeFileLocally(sName, buf);
-//    var myName   = sName;
-//     fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-//         imgBuffData = data;
-//         dir         = sNormalizedPath + sName;
-//         //    log(dir);          n
-//         //    log(myName);
-//         //    log(imgBuffData);
-//         if (err) {throw err;}
-//     });
-//         // createBlockBlob(myName, dir);
-//          createBlobFromStream(myName, buf, buf.length);
-  });
+    // -- FILE
+    socket.on('sendFileToServer',  function (buf){
+        log('File received from client');
+        log(buf);
+        sName = "myImage.png";
+
+        // Save locally
+        writeFileLocally(sName, buf);
+        var myName   = sName;
+        var dir      = sNormalizedPath + sName;
+     
+        // Read back
+         fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+             imgBuffData = data;         
+             //    log(myName);
+             //    log(imgBuffData);
+             if (err) {throw err;}
+         });
+              createBlockBlob(myName, dir);
+    });
+
+
+    // -- BUFFER
+    socket.on('sendByteArrToServer', function (buf){
+        log('Buffer array received from client');
+
+    var newfile  = writeFileLocally(sName, buf);
+    var myName   = sName;
+
+        fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+            imgBuffData = data;
+            dir         = sNormalizedPath + sName;
+            //    log(dir);          n
+            //    log(myName);
+            //    log(imgBuffData);
+            if (err) {throw err;}
+        });
+            // createBlockBlob(myName, dir);
+            createBlobFromStream(myName, buf, buf.length);
+    });
 
 }); 
 
@@ -165,23 +207,23 @@ function getBlobToLocalFile () {
 };
 
 function createBlobFromStream(sName, stream){
-    blobService.createBlockBlobFromStream(sContainer, "myName.png", stream, stream.length, function(error) {if (error){log(error);}});
+    blobService.createBlockBlobFromStream(sContainer, "myName.png", stream, stream.length, function(error) {
+        if (error){
+            log(error);}
+        }
+    );
 };
 
 
 function createBlockBlob(sName, dir){
-    if (sName === null || undefined) {return;};
-    if (dir   === null || undefined) {return;};
     log("sName: "+ sName);
-    log('dir: ' + dir );
-    var sName = "myImage.png";
-    var dir = __dirname + path.normalize('/public/images/' + sName);  
+    log('dir: '  + dir  );
     blobService.createBlockBlobFromLocalFile(sContainer, sName, dir, function(error, result, response) {
         if (!error) {
-            log("UPLOADING:: " + result.name + " \n from: " + dir);
+            log("UPLOADING: " + result.name + " \n from: " + dir);
             // File exists
             fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-                log("data: " + data);
+                // log("data: " + data);
             });
         } if (error) {
             log("ERROR:      " + error      );
