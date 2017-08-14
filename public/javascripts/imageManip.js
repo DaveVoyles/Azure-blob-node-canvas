@@ -31,8 +31,9 @@ function runScript() {
         });
     };
 
-
+    /** Keeps track of # of images stored on canvas */
     let iterator      = 0;
+    /**When x number of images are stored on canvas, we can convert to dataURL */
     let nMaxImgInArr  = 5;
 
     /**
