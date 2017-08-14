@@ -69,7 +69,7 @@ function runScript() {
      * @param {string} canvasImgUrl - canvas.toDataURL 
      */
     function sendAsB64String (canvasImgUrl) {
-         let base64String   = canvasImgUrl.split(',')[1];
+         let base64String = canvasImgUrl.split(',')[1];
          socket.emit('sendB64ToServer', base64String);
     };
 
@@ -79,7 +79,7 @@ function runScript() {
      * @param {string} canvasImgUrl - canvas.toDataURL 
      */
     function sendAsByteArr(canvasImgUrl){ 
-        let buf         =  convertB64ToByteArr(canvasImgUrl);
+        let buf = convertB64ToByteArr(canvasImgUrl);
         socket.emit('sendByteArrToServer', buf);
     };
 

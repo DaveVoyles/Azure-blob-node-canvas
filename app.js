@@ -9,14 +9,12 @@ var index        = require('./routes/index');
 var users        = require('./routes/users');
 var fs           = require('fs');
 var Readable     = require('stream').Readable;
-var stream       = require('stream');
-
 var log          = console.log.bind(console);   
                    require('dotenv').config(); // account vars
 
 // Socket.io requirements
-var port  = 8080;
-var io    = require('socket.io').listen(8080);
+var port         = 8080;
+var io           = require('socket.io').listen(8080);
 log("NODE: Server running on 127.0.0.1:" + port);
 
 
@@ -72,11 +70,8 @@ io.on('connection', function (socket) {
   });
 
   // Receives file from web app & copies locally
-  var imgBuffData     = {};
-  var myName          = "";
   var dir             = '';
   var sNormalizedPath =__dirname + path.normalize('/public/images/');  
-  var sName = "myImage.png";
 
     // -- B64 STRING
     socket.on('sendB64ToServer', function(b64String) {
@@ -86,49 +81,30 @@ io.on('connection', function (socket) {
               readable._read = function () {} // _read is required but you can noop it
               readable.push(buffer);
               readable.pipe(
-            blobService.createWriteStreamToBlockBlob("dumpster","myNewImage.png", 
-                function (err, result, res) {
-                    if (err) {
-                        console.error(err);
-                    } else {
-                    console.log(result);
-                    console.log(res);
-                }
-                })
-                .on("data", function (chunk){
-                    console.log("get data : " + chunk);
-                })
+                    blobService.createWriteStreamToBlockBlob("dumpster","myNewImage.png", 
+                        function (err, result, res) {
+                            if (err) {
+                                log.error(err);
+                            } else {
+                                log(result);
+                                log(res);
+                            }
+                        })
+                        .on("data", function (chunk){
+                            log("get data : " + chunk);
+                        })
             )
     });
 
 
     // -- FILE
     socket.on('sendFileToServer',  function (buf){
-        log('File received from client');
+        log('File buffer received from client');
 
-        sName = "myImage.png";
         const readable = new Readable()
-        readable._read = function () {} // _read is required but you can noop it
-        readable.push(buf)
-        readable.push(null);
-        readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "myImage.png"));
-
-        // blobService.createWriteStreamToBlockBlob("dumpster", "myImage.png");
-        // blobService.createBlockBlobFromStream("dumpster", "myImage.png", readable, buf.length, null);
-
-        // Save locally
-        // writeFileLocally(sName, buf);
-        // var myName   = sName;
-        // var dir      = sNormalizedPath + sName;
-     
-        // // Read back
-        //  fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-        //      imgBuffData = data;         
-        //      //    log(myName);
-        //      //    log(imgBuffData);
-        //      if (err) {throw err;}
-        //  });
-            //   createBlockBlob(myName, dir);
+              readable.push(buf)
+              readable.push(null);
+              readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "myImage.png"));
     });
 
 
@@ -159,15 +135,15 @@ io.on('connection', function (socket) {
 // Blob Storage vars
 
 // Defined in .env file, using dotenv
-var azure              = require('azure-storage');
-var storageAccountName = process.env.AZURE_STORAGE_ACCOUNT;
+var azure              = require('azure-storage')                   ;
+var storageAccountName = process.env.AZURE_STORAGE_ACCOUNT          ;
 var connString         = process.env.AZURE_STORAGE_CONNECTION_STRING;
-var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY;
-var blobService        = azure.createBlobService();
+var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY       ;
+var blobService        = azure.createBlobService()                  ;
 
 // Temp vars
 var sContainer = "dumpster";
-var sBlob      = "cat.jpg";
+var sBlob      = "cat.jpg" ;
 
 
 module.exports = app;
@@ -217,7 +193,8 @@ function getBlobToLocalFile () {
     });    
 };
 
-function createBlobFromStream(sName, stream){
+
+function createBlobFromStream(sName, stream) {
     blobService.createBlockBlobFromStream(sContainer, "myName.png", stream, stream.length, function(error) {
         if (error){
             log(error);}
@@ -226,23 +203,24 @@ function createBlobFromStream(sName, stream){
 };
 
 
-function createBlockBlob(sName, dir){
-    log("sName: "+ sName);
-    log('dir: '  + dir  );
+function createBlockBlob(sName, dir) {
     //File exists - check here to be sure 
-    fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-          log("data: " + data);
+    fs.readFile(__dirname + '/public/images/' + sName, function(err, data) {
+        log('sName: '+ sName);
+        log('dir:   '+ dir  );
+        log('data:  '+ data );
     });
+
     blobService.createBlockBlobFromLocalFile(sContainer, sName, dir, function(error, result, response) {
         if (!error) {
-            // log(result);
+            // log(result  );
             // log(response);
             // log("UPLOADING: " + result.name + " \n from: " + dir);
             // URL containing the image works, but file is empty?
             var url =  blobService.getUrl(sContainer, sName)
             log (url);
         } if (error) {
-            log("ERROR:      " + error      );
+            log("ERROR: " + error);
         }
     });
 };
