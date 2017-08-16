@@ -43,9 +43,9 @@ function runScript() {
 
     /**
      * Draw all imaAdges to canvas. 
-     * @param {array} currentValue - The value of the current element being processed in the array.
-     * @param {number}   index        - The index of the current element being processed in the array.
-     * @param {array} array        - The array that forEach() is being applied to.
+     * @param {array}  currentValue - The value of the current element being processed in the array.
+     * @param {number} index        - The index of the current element being processed in the array.
+     * @param {array}  array        - The array that forEach() is being applied to.
      */
     function drawToCanvas (currentValue, index, array) {
         return loadImg(currentValue.uri).then(img => {
@@ -55,7 +55,7 @@ function runScript() {
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
                 let canvasImgUrl =  getCanvas().toDataURL(); 
-
+                getFiles();
                 var myFile = renameFile("myName.png");
                 // NOTE: You only need to use one (1) of these options, depending on the format you
                 // want the server to process the image.
@@ -133,6 +133,36 @@ function runScript() {
         return byteArray;
     };
 
+
+    function getFiles(){
+        var dir           = "images/";
+        var fileextension = ".png";
+
+        $.ajax({
+            //This will retrieve the contents of the folder if the folder is configured as 'browsable'
+            url: dir,
+            success: function (data) {
+                //List all .png file names in the page
+                $(data).find("a:contains(" + fileextension + ")").each(function () {
+                    var filename = this.href.replace(window.location.host, "").replace("http://", "");
+                    // $("body").append("<img src='" + dir + filename + "'>");
+                    log(filename);
+                });
+            }
+        });
+    };
+
+    function mlString(f) {
+        return f.toString().
+            replace(/^[^\/]+\/\*!?/, '');
+            replace(/\*\/[^\/]+$/, '');
+    }
+
+
+
+    const myImgs = [
+        {}
+    ];
 
     let imgH = 50;
     let imgW = 50;

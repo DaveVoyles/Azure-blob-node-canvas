@@ -14,13 +14,16 @@ var log          = console.log.bind(console);
                    require('dotenv').config(); // account vars
 
 // Socket.io requirements
-var port         = 8080;
+var port         = 3000;
+// var port         = 8080;
 var io           = require('socket.io').listen(8080);
 log("NODE: Server running on 127.0.0.1:" + port);
 
 
 // --------------------------------------------------------
 // App configuration
+
+app.set('port', process.env.PORT || 8080);
 
 // view engine setup - HTML works fine out of the box
 app.set('views', path.join(__dirname, 'views'));
