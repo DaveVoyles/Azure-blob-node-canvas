@@ -14,9 +14,8 @@ var log          = console.log.bind(console);
                    require('dotenv').config(); // account vars
 
 // Socket.io requirements
-var port         = 3000;
-// var port         = 8080;
-var io           = require('socket.io').listen(8080);
+var port = 8080;
+var io   = require('socket.io').listen(port);
 log("NODE: Server running on 127.0.0.1:" + port);
 
 
@@ -41,6 +40,10 @@ app.use(function(req, res, next) {
   var err = new Error('Not Found');
       err.status = 404;
   next(err);
+});
+
+app.get('/', function(req, res){
+    res.sendFile(__dirname+'views/index.jade'); // change the path to your index.html
 });
 
 // error handler
@@ -77,6 +80,9 @@ function renameFile(fileName){
 
     // return newFileName;
 };
+
+/** Images returned from blob are stored here, sent to client */
+var aImgs = [];
 
 //-------------------------------------------------------------
 // Socket.io connections
@@ -160,8 +166,6 @@ io.on('connection', function (socket) {
 
 
 
-
-
 // -----------------------------------------------------
 // Blob Storage vars
 
@@ -182,6 +186,7 @@ module.exports = app;
 
 /** Return blobs with the prefix of today's date. */
 function getBlobs(){
+    log('getting blobs');
     blobService.listBlobsSegmentedWithPrefix(sContainer, new Date().today(), null, {delimiter: "", maxResults : 5},
         function(err, result) {
         if (err) {
@@ -190,17 +195,23 @@ function getBlobs(){
         } else {
             log('Successfully listed blobs for container %s', sContainer);
             log(result.entries);  
-            
             // Loop through each entry in the blob and save it locally to server under "images" folder
             result.entries.forEach(function(element) {
                 var sNormalizedPath =__dirname + path.normalize('/public/images/');                  
                 var loc             = sNormalizedPath + element.name;
+                aImgs.push(element);
                 blobService.getBlobToLocalFile(sContainer, element.name, loc, null,
                         function(result, err){
+                          
                             // TODO: 1. Store images in an array
                             //       2. Call func to have client read images 
                 })
+                log('got images');
             }, this);
+            log(aImgs[0]);
+            var app = require('app.js');
+
+            app.socket.emit('sendImgArrToClient', aImgs);           
         }
     });
 };

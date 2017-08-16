@@ -23,6 +23,11 @@ function runScript() {
         log(res.entries);
     });
 
+    socket.on('sendImgArrToClient', function (res){
+        log('Images received from server');
+        log(res);
+    });
+
     /**
      * Loads images from a url.
      * @param {string} url - Addresss image is located at. 
@@ -55,13 +60,13 @@ function runScript() {
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
                 let canvasImgUrl =  getCanvas().toDataURL(); 
-                getFiles();
-                var myFile = renameFile("myName.png");
+                // getFiles();
+                // var myFile = renameFile("myName.png");
                 // NOTE: You only need to use one (1) of these options, depending on the format you
                 // want the server to process the image.
                 urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
                     .then(function(file){ 
-                        socket.emit('sendFileToServer', file);
+                       socket.emit('sendFileToServer', file);
                 })       
                  //sendAsB64String(canvasImgUrl);
                  //sendAsByteArr(canvasImgUrl);
@@ -79,6 +84,7 @@ function runScript() {
         return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
     };
 
+    /** Rename file by appending today's date. Probably not needed anymore */
     function renameFile(fileName){
         let newFileName = '';
         let today       = new Date().today  ();
