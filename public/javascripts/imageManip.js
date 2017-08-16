@@ -1,5 +1,6 @@
-    /* Namespace to send / receive socket messages.
-     * Call this first to establish connection. When completed, calls the rest of the scripts to execute. */
+
+   /* Namespace to send / receive socket messages.
+    * Call this first to establish connection. When completed, calls the rest of the scripts to execute. */
     const log     = console.log.bind(console);  
     var serverUrl = 'http://localhost:8080';
     var socket    = io.connect(serverUrl, {reconnect: true});
@@ -17,6 +18,10 @@ function runScript() {
           getCanvas().width  =  80;
     const getContext       = () => getCanvas().getContext ('2d'    );
 
+
+    socket.on('sendEntriesToClient', function (res){
+        log(res.entries);
+    });
 
     /**
      * Loads images from a url.
@@ -39,7 +44,7 @@ function runScript() {
     /**
      * Draw all imaAdges to canvas. 
      * @param {array} currentValue - The value of the current element being processed in the array.
-     * @param {int}   index        - The index of the current element being processed in the array.
+     * @param {number}   index        - The index of the current element being processed in the array.
      * @param {array} array        - The array that forEach() is being applied to.
      */
     function drawToCanvas (currentValue, index, array) {
@@ -51,6 +56,7 @@ function runScript() {
             if (iterator === nMaxImgInArr) { 
                 let canvasImgUrl =  getCanvas().toDataURL(); 
 
+                var myFile = renameFile("myName.png");
                 // NOTE: You only need to use one (1) of these options, depending on the format you
                 // want the server to process the image.
                 urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
@@ -61,6 +67,29 @@ function runScript() {
                  //sendAsByteArr(canvasImgUrl);
             }
         });
+    };
+
+    /** new Date().today() */
+    Date.prototype.today = function () { 
+        return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-')       
+    };
+
+    /** new Date().timeNow() */
+    Date.prototype.timeNow = function () {
+        return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
+    };
+
+    function renameFile(fileName){
+        let newFileName = '';
+        let today       = new Date().today  ();
+        let now         = new Date().timeNow();
+        let extension   = fileName.split('.').pop();
+        var output      = fileName.substr(0, fileName.lastIndexOf('.')) || fileName;
+
+        newFileName = output + '-' + today  + '.' + extension;
+        log(newFileName);
+
+        // return newFileName;
     };
 
 

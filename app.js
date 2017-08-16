@@ -9,6 +9,7 @@ var index        = require('./routes/index');
 var users        = require('./routes/users');
 var fs           = require('fs');
 var Readable     = require('stream').Readable;
+var Writeable    = require('stream').Writeable;
 var log          = console.log.bind(console);   
                    require('dotenv').config(); // account vars
 
@@ -51,17 +52,41 @@ app.use(function(err, req, res, next) {
 });
 
 
+/** new Date().today() */
+Date.prototype.today = function () { 
+    return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear();
+};
+
+/** new Date().timeNow() */
+Date.prototype.timeNow = function () {
+    return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
+};
+
+function renameFile(fileName){
+    let newFileName = '';
+    let today       = new Date().today  ();
+    let now         = new Date().timeNow();
+    let extension   = filenNme.split('.').pop();
+    var output      = fileName.substr(0, fileName.lastIndexOf('.')) || fileName;
+
+    newFileName = output + today + now + extension;
+    log(newFileName);
+
+    // return newFileName;
+};
+
 //-------------------------------------------------------------
 // Socket.io connections
 io.on('connection', function (socket) {
   log('Socket.io connection etablished');
 
   socket.on('error', function(e) {
-    log("Client connected: " + e);
+    throw new error;
   });
 
-  socket.on('disconnect', function(e) {
-    log('Client disconnected: ' + e);
+
+  socket.on('disconnect', function(err) {
+    log('Client disconnected: ' + err);
   });
 
   socket.on('createBlockBlob', (payload) => {
@@ -100,6 +125,7 @@ io.on('connection', function (socket) {
     // -- FILE
     socket.on('sendFileToServer',  function (buf){
         log('File buffer received from client');
+        getBlobs();
 
         const readable = new Readable()
               readable.push(buf)
@@ -131,6 +157,8 @@ io.on('connection', function (socket) {
 
 
 
+
+
 // -----------------------------------------------------
 // Blob Storage vars
 
@@ -145,10 +173,34 @@ var blobService        = azure.createBlobService()                  ;
 var sContainer = "dumpster";
 var sBlob      = "cat.jpg" ;
 
-
 module.exports = app;
 // NOTE: Functions past here do not get called when app.js is loaded
 
+
+/** Return blobs with the prefix of today's date. */
+function getBlobs(){
+    blobService.listBlobsSegmentedWithPrefix(sContainer, new Date().today(), null, {delimiter: "", maxResults : 5},
+        function(err, result) {
+        if (err) {
+            log("Couldn't list blobs for container %s", sContainer);
+            error(err);
+        } else {
+            log('Successfully listed blobs for container %s', sContainer);
+            log(result.entries);  
+            
+            // Loop through each entry in the blob and save it locally to server under "images" folder
+            result.entries.forEach(function(element) {
+                var sNormalizedPath =__dirname + path.normalize('/public/images/');                  
+                var loc             = sNormalizedPath + element.name;
+                blobService.getBlobToLocalFile(sContainer, element.name, loc, null,
+                        function(result, err){
+                            // TODO: 1. Store images in an array
+                            //       2. Call func to have client read images 
+                })
+            }, this);
+        }
+    });
+};
 
 // -----------------------------------------------------
 // Storage
@@ -177,18 +229,13 @@ function listBlobs () {
     });
 };
 
+
+
 /** Downloads a blob into a file. */
 function getBlobToLocalFile () {
     blobService.getBlobToLocalFile(sContainer, sBlob,sNewName, function(error, result, response) {
         if (!error) {
             log("blob retrieved. NAME: " + result.name);
-            
-            // blobService.createBlockBlobFromLocalFile(sContainer, sNewName, sNewName, function(error, result, response) {
-            //     if (!error) {
-            //             context.log("UpLOADING:: " + result.name);
-            //         // Upload worked
-            //     }
-            // });node
         }
     });    
 };
@@ -201,6 +248,18 @@ function createBlobFromStream(sName, stream) {
         }
     );
 };
+
+    /** new Date().today() */
+    Date.prototype.today = function () { 
+        return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-')       
+    };
+
+    log(new Date().today());
+    /** new Date().timeNow() */
+    Date.prototype.timeNow = function () {
+        return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
+    };
+
 
 
 function createBlockBlob(sName, dir) {
@@ -223,4 +282,5 @@ function createBlockBlob(sName, dir) {
             log("ERROR: " + error);
         }
     });
+
 };
