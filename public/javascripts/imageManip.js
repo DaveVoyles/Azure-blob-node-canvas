@@ -18,10 +18,17 @@ function runScript() {
           getCanvas().width  =  80;
     const getContext       = () => getCanvas().getContext ('2d'    );
 
-
+    var _increment = 0;
     socket.on('sendImgArrToClient', function (res){
+            _increment++;
+        log(_increment);
         log('Images received from server');
         log(res);
+    //     for (var index = 0; index < res.length; index++) {
+    //         // var element = array[index];    
+    //         log(res[index].name)        
+    //     }
+    //    log(res);
     });
 
     /**
@@ -161,9 +168,7 @@ function runScript() {
     }
 
 
-
-    const myImgs = [
-        {}
+   const myImgs = [
     ];
 
     let imgH = 50;

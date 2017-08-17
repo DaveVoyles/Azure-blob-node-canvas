@@ -142,7 +142,7 @@ log('Socket.io connection etablished');
         const readable = new Readable()
               readable.push(buf)
               readable.push(null);
-              readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "myImage.png"));
+              readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "canvasImage.png"));
     });
 
 
@@ -181,7 +181,6 @@ var blobService        = azure.createBlobService()                  ;
 
 // Temp vars
 var sContainer = "dumpster";
-var sBlob      = "cat.jpg" ;
 
  module.exports = app; 
 
@@ -201,14 +200,14 @@ function getBlobs(socket){
             log('Successfully listed blobs for container %s', sContainer);
             // log(result.entries);  
             // Loop through each entry in the blob and save it locally to server under "images" folder
-            result.entries.forEach(function(element) {          
+            result.entries.forEach(function(element) {   
+                // Store element in images folder and copy the name from the server       
                 var loc = sNormalizedPath + element.name;
                 aImgs.push(element);              
                 blobService.getBlobToLocalFile(sContainer, element.name, loc, null,
                     function(result, err){}) 
             }, this);
-            log('sendImgArrToClient');
-            socket.emit('sendImgArrToClient', aImgs);           
+            socket.emit('sendImgArrToClient', aImgs);   
         }
     });
 };
@@ -246,7 +245,6 @@ function listBlobs () {
 };
 
 
-
 /** Downloads a blob into a file. */
 function getBlobToLocalFile () {
     blobService.getBlobToLocalFile(sContainer, sBlob,sNewName, function(error, result, response) {
@@ -259,25 +257,27 @@ function getBlobToLocalFile () {
 
 function createBlobFromStream(sName, stream) {
     blobService.createBlockBlobFromStream(sContainer, "myName.png", stream, stream.length, function(error) {
-        if (error){
-            log(error);}
-        }
-    );
+        if (error){ log.error(error); }
+    });
 };
 
-    /** new Date().today() */
-    Date.prototype.today = function () { 
-        return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-')       
-    };
-
-    log(new Date().today());
-    /** new Date().timeNow() */
-    Date.prototype.timeNow = function () {
-        return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
-    };
+/** new Date().today() */
+Date.prototype.today = function () { 
+    return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-')       
+};
 
 
+/** new Date().timeNow() */
+Date.prototype.timeNow = function () {
+    return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
+};
 
+
+/**
+ *  Creates a blockblob from local file
+ * @param {string} sName - What is the file's name?
+ * @param {string} dir   - Where should the file be retrieved from?
+ */
 function createBlockBlob(sName, dir) {
     //File exists - check here to be sure 
     fs.readFile(__dirname + '/public/images/' + sName, function(err, data) {
@@ -286,6 +286,7 @@ function createBlockBlob(sName, dir) {
         log('data:  '+ data );
     });
 
+    // BUG: This does not work. No idea why.
     blobService.createBlockBlobFromLocalFile(sContainer, sName, dir, function(error, result, response) {
         if (!error) {
             // log(result  );
