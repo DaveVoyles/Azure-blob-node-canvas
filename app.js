@@ -183,33 +183,31 @@ var blobService        = azure.createBlobService()                  ;
 var sContainer = "dumpster";
 var sBlob      = "cat.jpg" ;
 
- module.exports = app; // <--- typically do not use this. Can probably get rid of this.
-// NOTE: Functions past here do not get called when app.js is loaded
+ module.exports = app; 
 
 
-/** Return blobs with the prefix of today's date. */
+/**
+ *  Return blobs with the prefix of today's date.
+ * @param {object} socket - socket.io connection 
+ */
 function getBlobs(socket){
-    log('getting blobs');
+    var sNormalizedPath =__dirname + path.normalize('/public/images/'); 
     blobService.listBlobsSegmentedWithPrefix(sContainer, new Date().today(), null, {delimiter: "", maxResults : 5},
         function(err, result) {
         if (err) {
             log("Couldn't list blobs for container %s", sContainer);
-            error(err);
+            log.error(err);
         } else {
             log('Successfully listed blobs for container %s', sContainer);
-            log(result.entries);  
+            // log(result.entries);  
             // Loop through each entry in the blob and save it locally to server under "images" folder
-            result.entries.forEach(function(element) {
-                var sNormalizedPath =__dirname + path.normalize('/public/images/');                  
-                var loc             = sNormalizedPath + element.name;
-                aImgs.push(element);
+            result.entries.forEach(function(element) {          
+                var loc = sNormalizedPath + element.name;
+                aImgs.push(element);              
                 blobService.getBlobToLocalFile(sContainer, element.name, loc, null,
-                        function(result, err){                         
-                })
-                log('got images');
+                    function(result, err){}) 
             }, this);
-            log(aImgs[0]);
-            // THIS IS THE ISSUE!
+            log('sendImgArrToClient');
             socket.emit('sendImgArrToClient', aImgs);           
         }
     });

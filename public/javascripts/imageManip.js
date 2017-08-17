@@ -19,10 +19,6 @@ function runScript() {
     const getContext       = () => getCanvas().getContext ('2d'    );
 
 
-    socket.on('sendEntriesToClient', function (res){
-        log(res.entries);
-    });
-
     socket.on('sendImgArrToClient', function (res){
         log('Images received from server');
         log(res);
