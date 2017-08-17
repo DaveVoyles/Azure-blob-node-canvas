@@ -18,18 +18,53 @@ function runScript() {
           getCanvas().width  =  80;
     const getContext       = () => getCanvas().getContext ('2d'    );
 
-    var _increment = 0;
+    let imgH = 50;
+    let imgW = 50;
+    let xPos = 15;
+    /**
+     * Must set coors on blobs to allow this to work.
+     * Only increment Y value to offset images.
+     * NOTE: Accepts images of 50x50
+     * TODO: Replace w/ a call to blob storage to retrieve images from Azure
+     * SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
+     */    
+     const aImgs = [
+        { uri: 'images/mj.jpg',  x: xPos, y:  15, w: imgW, h: imgH },
+        { uri: 'images/cat.jpg', x: xPos, y:  80, w: imgW, h: imgH },
+        { uri: 'images/mj.jpg',  x: xPos, y: 145, w: imgW, h: imgH },
+        { uri: 'images/cat.jpg', x: xPos, y: 210, w: imgW, h: imgH },
+        { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
+    ];
+
+    aImgs.forEach(drawToCanvas);
+
+    // const myImgs = [
+    //     { uri: '',  x: xPos, y:  15, w: imgW, h: imgH },
+    //     { uri: '',  x: xPos, y:  80, w: imgW, h: imgH },
+    //     { uri: '',  x: xPos, y: 145, w: imgW, h: imgH },
+    //     { uri: '',  x: xPos, y: 210, w: imgW, h: imgH },
+    //     { uri: '',  x: xPos, y: 275, w: imgW, h: imgH}
+    // ];
+
+    var myImgs = [
+        { x: xPos, y:  15, w: imgW, h: imgH },
+        { x: xPos, y:  80, w: imgW, h: imgH },
+        { x: xPos, y: 145, w: imgW, h: imgH },
+        { x: xPos, y: 210, w: imgW, h: imgH },
+        { x: xPos, y: 275, w: imgW, h: imgH}
+    ];
+
+    /** Receives images from blob storage -> node server
+     * BUG: res.length grows each time I call this. Weird?
+     * Have to hardcode length of array so that it only returns 5.
+     */
     socket.on('sendImgArrToClient', function (res){
-            _increment++;
-        log(_increment);
-        log('Images received from server');
-        log(res);
-    //     for (var index = 0; index < res.length; index++) {
-    //         // var element = array[index];    
-    //         log(res[index].name)        
-    //     }
-    //    log(res);
+        for (var index = 0; index < 5; index++) {
+            myImgs[index].uri = res;
+            log(myImgs[index].uri)     
+        }
     });
+  
 
     /**
      * Loads images from a url.
@@ -168,28 +203,7 @@ function runScript() {
     }
 
 
-   const myImgs = [
-    ];
 
-    let imgH = 50;
-    let imgW = 50;
-    let xPos = 15;
-    /**
-     * Must set coors on blobs to allow this to work.
-     * Only increment Y value to offset images.
-     * NOTE: Accepts images of 50x50
-     * TODO: Replace w/ a call to blob storage to retrieve images from Azure
-     * SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
-     */    
-     const aImgs = [
-        { uri: 'images/mj.jpg',  x: xPos, y:  15, w: imgW, h: imgH },
-        { uri: 'images/cat.jpg', x: xPos, y:  80, w: imgW, h: imgH },
-        { uri: 'images/mj.jpg',  x: xPos, y: 145, w: imgW, h: imgH },
-        { uri: 'images/cat.jpg', x: xPos, y: 210, w: imgW, h: imgH },
-        { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
-    ];
-
-    aImgs.forEach(drawToCanvas);
 
 
     /** 
