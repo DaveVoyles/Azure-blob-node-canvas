@@ -42,9 +42,9 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-app.get('/', function(req, res){
-    res.sendFile(__dirname+'views/index.jade'); // change the path to your index.html
-});
+// app.get('/', function(req, res){
+//     res.sendFile(__dirname+'views/index.jade'); // change the path to your index.html
+// });
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -82,12 +82,16 @@ function renameFile(fileName){
 };
 
 /** Images returned from blob are stored here, sent to client */
-var aImgs = [];
-
+var aImgs           = [];
 //-------------------------------------------------------------
+// Create funciton: SetupEvents(socket){
+    // Insert events here
+    // Ex: socket.on ('whatever')
+//};
+
 // Socket.io connections
-io.on('connection', function (socket) {
-  log('Socket.io connection etablished');
+io.on('connection', function (socket) { // <--- use SetupEvents here
+log('Socket.io connection etablished');
 
   socket.on('error', function(e) {
     throw new error;
@@ -100,7 +104,7 @@ io.on('connection', function (socket) {
 
   socket.on('createBlockBlob', (payload) => {
     log("Creating block blob");
-    createBlockBlob(payload);
+    createBlockBlob(payload);// <-- Pass the socket in here
   });
 
   // Receives file from web app & copies locally
@@ -117,14 +121,13 @@ io.on('connection', function (socket) {
               readable.pipe(
                     blobService.createWriteStreamToBlockBlob("dumpster","myNewImage.png", 
                         function (err, result, res) {
-                            if (err) {
-                                log.error(err);
-                            } else {
+                            if (err) { log.error(err); } 
+                            else {
                                 log(result);
                                 log(res);
                             }
                         })
-                        .on("data", function (chunk){
+                        .on("data", function (chunk) {
                             log("get data : " + chunk);
                         })
             )
@@ -134,7 +137,7 @@ io.on('connection', function (socket) {
     // -- FILE
     socket.on('sendFileToServer',  function (buf){
         log('File buffer received from client');
-        getBlobs();
+        getBlobs(socket);
 
         const readable = new Readable()
               readable.push(buf)
@@ -180,12 +183,12 @@ var blobService        = azure.createBlobService()                  ;
 var sContainer = "dumpster";
 var sBlob      = "cat.jpg" ;
 
-module.exports = app;
+ module.exports = app; // <--- typically do not use this. Can probably get rid of this.
 // NOTE: Functions past here do not get called when app.js is loaded
 
 
 /** Return blobs with the prefix of today's date. */
-function getBlobs(){
+function getBlobs(socket){
     log('getting blobs');
     blobService.listBlobsSegmentedWithPrefix(sContainer, new Date().today(), null, {delimiter: "", maxResults : 5},
         function(err, result) {
@@ -201,20 +204,21 @@ function getBlobs(){
                 var loc             = sNormalizedPath + element.name;
                 aImgs.push(element);
                 blobService.getBlobToLocalFile(sContainer, element.name, loc, null,
-                        function(result, err){
-                          
-                            // TODO: 1. Store images in an array
-                            //       2. Call func to have client read images 
+                        function(result, err){                         
                 })
                 log('got images');
             }, this);
             log(aImgs[0]);
-            var app = require('app.js');
-
-            app.socket.emit('sendImgArrToClient', aImgs);           
+            // THIS IS THE ISSUE!
+            socket.emit('sendImgArrToClient', aImgs);           
         }
     });
 };
+
+
+// OPTIONS:
+// 1. Closure to capture the scope of the socket instance
+// 2. Dependency injection w/ the socket
 
 // -----------------------------------------------------
 // Storage
