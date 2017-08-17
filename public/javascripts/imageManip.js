@@ -38,20 +38,17 @@ function runScript() {
 
     aImgs.forEach(drawToCanvas);
 
-    // const myImgs = [
-    //     { uri: '',  x: xPos, y:  15, w: imgW, h: imgH },
-    //     { uri: '',  x: xPos, y:  80, w: imgW, h: imgH },
-    //     { uri: '',  x: xPos, y: 145, w: imgW, h: imgH },
-    //     { uri: '',  x: xPos, y: 210, w: imgW, h: imgH },
-    //     { uri: '',  x: xPos, y: 275, w: imgW, h: imgH}
-    // ];
 
     var myImgs = [
         { x: xPos, y:  15, w: imgW, h: imgH },
         { x: xPos, y:  80, w: imgW, h: imgH },
         { x: xPos, y: 145, w: imgW, h: imgH },
         { x: xPos, y: 210, w: imgW, h: imgH },
-        { x: xPos, y: 275, w: imgW, h: imgH}
+        { x: xPos, y: 275, w: imgW, h: imgH }
+    ];
+
+    var _aImgs = [
+        {  x: xPos, y:  15, w: imgW, h: imgH }
     ];
 
     /** Receives images from blob storage -> node server
@@ -59,9 +56,16 @@ function runScript() {
      * Have to hardcode length of array so that it only returns 5.
      */
     socket.on('sendImgArrToClient', function (res){
-        for (var index = 0; index < 5; index++) {
-            myImgs[index].uri = res;
-            log(myImgs[index].uri)     
+        for (var index = 0; index < 1; index++) {
+            _aImgs[0].uri = res[0].name;
+            log (res[0].name);
+            log(_aImgs);
+        // for (var index = 0; index < 5; index++) {            
+            // for (var j = 0; j < 5; j++) {
+            // }
+            // Why is this still going above 5?
+            // myImgs[index].uri = res;
+
         }
     });
   
