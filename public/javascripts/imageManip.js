@@ -35,7 +35,6 @@ function runScript() {
         { uri: 'images/cat.jpg', x: xPos, y: 210, w: imgW, h: imgH },
         { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
     ];
-
     aImgs.forEach(drawToCanvas);
 
 
@@ -71,7 +70,6 @@ function runScript() {
     };
 
 
-
     function drawToCanvasFromBob (currentValue, index, array) {
         log('currentVal.uri:')
         log(currentValue.uri);
@@ -84,16 +82,10 @@ function runScript() {
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
                 let canvasImgUrl =  getCanvas().toDataURL(); 
-                // getFiles();
-                // var myFile = renameFile("myName.png");
-                // NOTE: You only need to use one (1) of these options, depending on the format you
-                // want the server to process the image.
                 urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
                     .then(function(file){ 
                     socket.emit('sendFileToServer', file);
                 })       
-                //sendAsB64String(canvasImgUrl);
-                //sendAsByteArr(canvasImgUrl);
             }
         });
     };
@@ -132,10 +124,6 @@ function runScript() {
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
                 let canvasImgUrl =  getCanvas().toDataURL(); 
-                // getFiles();
-                // var myFile = renameFile("myName.png");
-                // NOTE: You only need to use one (1) of these options, depending on the format you
-                // want the server to process the image.
                 urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
                     .then(function(file){ 
                        socket.emit('sendFileToServer', file);
@@ -208,26 +196,6 @@ function runScript() {
         
         return byteArray;
     };
-
-
-    function getFiles(){
-        var dir           = "images/";
-        var fileextension = ".png";
-
-        $.ajax({
-            //This will retrieve the contents of the folder if the folder is configured as 'browsable'
-            url: dir,
-            success: function (data) {
-                //List all .png file names in the page
-                $(data).find("a:contains(" + fileextension + ")").each(function () {
-                    var filename = this.href.replace(window.location.host, "").replace("http://", "");
-                    // $("body").append("<img src='" + dir + filename + "'>");
-                    log(filename);
-                });
-            }
-        });
-    };
-
 
 
     /** 
