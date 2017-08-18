@@ -46,7 +46,8 @@ function runScript() {
         { x: xPos, y: 275, w: imgW, h: imgH }
     ];
 
-    /** Receives images from blob storage -> node server.
+    /** 
+     * Receives images from blob storage -> node server.
      * Set uri property in images array with "name" from blob storage item.
      * BUG: res.length grows each time I call this. Weird?
      * Have to hardcode length of array so that it only returns 5.
@@ -55,36 +56,38 @@ function runScript() {
         for (var index = 0; index < 5; index++) {
             _aImgs[index].uri = res[index].name;
         }
-        _aImgs.forEach(drawToCanvasFromBob)
+        _aImgs.forEach(drawToCanvasFromBlob)
     });
   
     function loadImgFromBlob(url) {
         var containerUrl = "https://functionsstorageacct.blob.core.windows.net/dumpster/";
 
         return new Promise((resolve, reject) => {
-            const img          = new Image();
+            const img         = new Image();
                   img.onload  = () => resolve(img);   
                   img.onerror = () => reject(new Error(`load ${url} fail`));
                   img.src     = containerUrl + url;
         });
     };
 
+    var iterator = 0;
 
-    function drawToCanvasFromBob (currentValue, index, array) {
-        log('currentVal.uri:')
+    function drawToCanvasFromBlob (currentValue, index, array) {
+        log('Draw from Blob:')
         log(currentValue.uri);
 
         return loadImgFromBlob (currentValue.uri).then(img => {
             getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
             iterator++; 
-            log('drawing');
+            log(iterator);
             // # of images receives from server. If not hard-coded, this func gets called out of order, 
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
+                log('sending file to server');
                 let canvasImgUrl =  getCanvas().toDataURL(); 
                 urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
                     .then(function(file){ 
-                    socket.emit('sendFileToServer', file);
+                        socket.emit('sendFileToServer', file);
                 })       
             }
         });
@@ -105,7 +108,7 @@ function runScript() {
     };
 
     /** Keeps track of # of images stored on canvas */
-    let iterator      = 0;
+    let localIterator      = 0;
     /**When x number of images are stored on canvas, we can convert to dataURL */
     let nMaxImgInArr  = 5;
     
@@ -118,15 +121,14 @@ function runScript() {
     function drawToCanvas (currentValue, index, array) {
         return loadImg(currentValue.uri).then(img => {
             getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
-            iterator++; 
-            log('drawing');
+            localIterator++; 
             // # of images receives from server. If not hard-coded, this func gets called out of order, 
             // sent to server before canvas has completed loading images.
-            if (iterator === nMaxImgInArr) { 
+            if (localIterator === nMaxImgInArr) { 
                 let canvasImgUrl =  getCanvas().toDataURL(); 
                 urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
                     .then(function(file){ 
-                       socket.emit('sendFileToServer', file);
+                        socket.emit('sendFileToServer', file);
                 })       
             }
         });
@@ -154,47 +156,6 @@ function runScript() {
         log(newFileName);
 
         // return newFileName;
-    };
-
-
-    /**
-     * Converts a canvas URL to a base64 string and emits to node server
-     * @param {string} canvasImgUrl - canvas.toDataURL 
-     */
-    function sendAsB64String (canvasImgUrl) {
-         let base64String = canvasImgUrl.split(',')[1];
-         socket.emit('sendB64ToServer', base64String);
-    };
-
-
-    /**
-     * Converts canvas URL to a byte array and emits to node server
-     * @param {string} canvasImgUrl - canvas.toDataURL 
-     */
-    function sendAsByteArr(canvasImgUrl){ 
-        let buf = convertB64ToByteArr(canvasImgUrl);
-        socket.emit('sendByteArrToServer', buf);
-    };
-
-
-    /**
-     * Converts a base64 string to a byte array.
-     * @param {string} sCanvasB64 - Base64 string representation of the current Canvas element.
-     * @returns {Uint8Array} A byte array. 
-     */
-    function convertB64ToByteArr(sCanvasB64) {
-        var base64String   = sCanvasB64.split(',')[1];
-        // decode a base64-encoded string into a new string with a character for each byte of the binary data
-        var byteCharacters = atob(base64String);
-        // Each character's code point (charCode) will be the value of the byte. We can create an array of byte values
-        var byteNumbers    = new Array(byteCharacters.length);
-        for (var i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        // convert this array of byte values into a real typed byte array
-        var byteArray = new Uint8Array(byteNumbers);
-        
-        return byteArray;
     };
 
 
@@ -227,6 +188,47 @@ function runScript() {
         log(image);
         window.location.href = image;
     }
+
+
+    /**
+     * Converts a canvas URL to a base64 string and emits to node server
+     * @param {string} canvasImgUrl - canvas.toDataURL 
+     */
+    function sendAsB64String (canvasImgUrl) {
+        let base64String = canvasImgUrl.split(',')[1];
+        socket.emit('sendB64ToServer', base64String);
+   };
+
+
+   /**
+    * Converts canvas URL to a byte array and emits to node server
+    * @param {string} canvasImgUrl - canvas.toDataURL 
+    */
+   function sendAsByteArr(canvasImgUrl){ 
+       let buf = convertB64ToByteArr(canvasImgUrl);
+       socket.emit('sendByteArrToServer', buf);
+   };
+
+
+   /**
+    * Converts a base64 string to a byte array.
+    * @param {string} sCanvasB64 - Base64 string representation of the current Canvas element.
+    * @returns {Uint8Array} A byte array. 
+    */
+   function convertB64ToByteArr(sCanvasB64) {
+       var base64String   = sCanvasB64.split(',')[1];
+       // decode a base64-encoded string into a new string with a character for each byte of the binary data
+       var byteCharacters = atob(base64String);
+       // Each character's code point (charCode) will be the value of the byte. We can create an array of byte values
+       var byteNumbers    = new Array(byteCharacters.length);
+       for (var i = 0; i < byteCharacters.length; i++) {
+           byteNumbers[i] = byteCharacters.charCodeAt(i);
+       }
+       // convert this array of byte values into a real typed byte array
+       var byteArray = new Uint8Array(byteNumbers);
+       
+       return byteArray;
+   };
 
     /** 
      * Saves image and downloads 
