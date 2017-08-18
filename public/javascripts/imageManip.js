@@ -22,23 +22,10 @@ function runScript() {
     let imgW = 50;
     let xPos = 15;
     /**
-     * Must set coors on blobs to allow this to work.
-     * Only increment Y value to offset images.
-     * NOTE: Accepts images of 50x50
-     * TODO: Replace w/ a call to blob storage to retrieve images from Azure
-     * SEE: Tainted canvas - https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported
+     * Stores image properties, which will be used when it is drawn on canvas.
+     * {string} 'uri' property is set when we loop through blobs that are returned from blob.
      */    
-     const aImgs = [
-        { uri: 'images/mj.jpg',  x: xPos, y:  15, w: imgW, h: imgH },
-        { uri: 'images/cat.jpg', x: xPos, y:  80, w: imgW, h: imgH },
-        { uri: 'images/mj.jpg',  x: xPos, y: 145, w: imgW, h: imgH },
-        { uri: 'images/cat.jpg', x: xPos, y: 210, w: imgW, h: imgH },
-        { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
-    ];
-    // aImgs.forEach(drawToCanvas);
-
-
-    var _aImgs = [
+    var aImgs = [
         { x: xPos, y:  15, w: imgW, h: imgH },
         { x: xPos, y:  80, w: imgW, h: imgH },
         { x: xPos, y: 145, w: imgW, h: imgH },
@@ -46,6 +33,7 @@ function runScript() {
         { x: xPos, y: 275, w: imgW, h: imgH }
     ];
 
+    
     /** 
      * Receives images from blob storage -> node server.
      * Set uri property in images array with "name" from blob storage item.
@@ -54,10 +42,11 @@ function runScript() {
      */
     socket.on('sendImgArrToClient', function (res){
         for (var index = 0; index < 5; index++) {
-            _aImgs[index].uri = res[index].name;
+            aImgs[index].uri = res[index].name;
         }
-        _aImgs.forEach(drawToCanvasFromBlob)
+        aImgs.forEach(drawToCanvasFromBlob)
     });
+
   
     function loadImgFromBlob(url) {
         var containerUrl = "https://functionsstorageacct.blob.core.windows.net/dumpster/";
@@ -73,13 +62,16 @@ function runScript() {
         });
     };
 
+    
+    /** Keeps track of how many times we've drawn an image to the canvas */
     var iterator = 0;
-
+    /**When when the iterator matches this #, we can convert to dataURL */
+    let nMaxImgInArr  = 5;
+    
     function drawToCanvasFromBlob (currentValue, index, array) {
         return loadImgFromBlob (currentValue.uri).then(img => {
             getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
             iterator++; 
-            log(iterator);
             // # of images receives from server. If not hard-coded, this func gets called out of order, 
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
@@ -104,33 +96,6 @@ function runScript() {
                   img.onload  = () => resolve(img);
                   img.onerror = () => reject(new Error(`load ${url} fail`));
                   img.src     = url;
-        });
-    };
-
-    /** Keeps track of # of images stored on canvas */
-    let localIterator      = 0;
-    /**When x number of images are stored on canvas, we can convert to dataURL */
-    let nMaxImgInArr  = 5;
-    
-    /**
-     * Draw all imaAdges to canvas. 
-     * @param {array}  currentValue - The value of the current element being processed in the array.
-     * @param {number} index        - The index of the current element being processed in the array.
-     * @param {array}  array        - The array that forEach() is being applied to.
-     */
-    function drawToCanvas (currentValue, index, array) {
-        return loadImg(currentValue.uri).then(img => {
-            getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
-            localIterator++; 
-            // # of images receives from server. If not hard-coded, this func gets called out of order, 
-            // sent to server before canvas has completed loading images.
-            if (localIterator === nMaxImgInArr) { 
-                let canvasImgUrl =  getCanvas().toDataURL(); 
-                urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
-                    .then(function(file){ 
-                        socket.emit('sendFileToServer', file);
-                })       
-            }
         });
     };
 
