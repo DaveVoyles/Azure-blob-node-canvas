@@ -93,10 +93,12 @@ var aImgs           = [];
 io.on('connection', function (socket) { // <--- use SetupEvents here
 log('Socket.io connection etablished');
 
+// ENTRY POINT -> Kick off main event to get blobs, send to client
+getBlobsFromAzure(socket);
+
   socket.on('error', function(e) {
     throw new error;
   });
-
 
   socket.on('disconnect', function(err) {
     log('Client disconnected: ' + err);
@@ -135,9 +137,13 @@ log('Socket.io connection etablished');
 
 
     // -- FILE
+    /**
+     * Receives file from client & converts to a readable stream. Then, pipes the stream to 
+     * Blob Storage.
+     */
     socket.on('sendFileToServer',  function (buf){
         log('File buffer received from client');
-        getBlobs(socket);
+        // getBlobsFromAzure(socket);
 
         const readable = new Readable()
               readable.push(buf)
@@ -185,40 +191,12 @@ var sContainer = "dumpster";
  module.exports = app; 
 
 
-/**
- *  Return blobs with the prefix of today's date.
- * @param {object} socket - socket.io connection 
- */
-function getBlobs(socket){
-    var sNormalizedPath =__dirname + path.normalize('/public/images/'); 
-    blobService.listBlobsSegmentedWithPrefix(sContainer, new Date().today(), null, {delimiter: "", maxResults : 5},
-        function(err, result) {
-        if (err) {
-            log("Couldn't list blobs for container %s", sContainer);
-            log.error(err);
-        } else {
-            log('Successfully listed blobs for container %s', sContainer);
-            // log(result.entries);  
-            // Loop through each entry in the blob and save it locally to server under "images" folder
-            result.entries.forEach(function(element) {   
-                // Store element in images folder and copy the name from the server       
-                var loc = sNormalizedPath + element.name;
-                aImgs.push(element);              
-                blobService.getBlobToLocalFile(sContainer, element.name, loc, null,
-                    function(result, err){}) 
-            }, this);
-            socket.emit('sendImgArrToClient', aImgs);   
-        }
-    });
-};
-
-
 // OPTIONS:
 // 1. Closure to capture the scope of the socket instance
 // 2. Dependency injection w/ the socket
 
 // -----------------------------------------------------
-// Storage
+// STORAGE
 
 /** Writes a file to the /public/images folder
  * @param {string} sImgName - Name of file to be saved. Needs to end in .png | .jpg
@@ -230,7 +208,34 @@ function writeFileLocally(sImgName, buf){
 };
 
 
-/** Returns a result segment containing a collection of blob items in the container.*/
+/**
+ *  Return blobs with the prefix of today's date, then sends the array of images to client for processing.
+ * @param {object} socket - socket.io connection 
+ */
+function getBlobsFromAzure(socket){
+    var sNormalizedPath =__dirname + path.normalize('/public/images/'); 
+    blobService.listBlobsSegmentedWithPrefix(sContainer, new Date().today(), null, {delimiter: "", maxResults : 5},
+        function(err, result) {
+        if (err) {
+            log("Couldn't list blobs for container %s", sContainer);
+            log.error(err);
+        } else {
+            log('Successfully listed blobs for container %s', sContainer);
+            // Loop through each entry in the blob and save it locally to server under "images" folder
+            result.entries.forEach(function(element) {   
+                // Store element in images folder and copy the name of the file from the blob storage       
+                var loc = sNormalizedPath + element.name;
+                aImgs.push(element);              
+                blobService.getBlobToLocalFile(sContainer, element.name, loc, null,
+                    function(result, err){}) 
+            }, this);
+            // Send array of images to client for processing             
+            socket.emit('sendImgArrToClient', aImgs);   
+        }
+    });
+};
+
+/** Returns a list containing a collection of blob items in the container.*/
 function listBlobs () {
     blobService.listBlobsSegmented(sContainer, null, function(err, result) {
          if (err) {

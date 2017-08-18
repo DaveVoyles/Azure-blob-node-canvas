@@ -35,7 +35,7 @@ function runScript() {
         { uri: 'images/cat.jpg', x: xPos, y: 210, w: imgW, h: imgH },
         { uri: 'images/mj.jpg',  x: xPos, y: 275, w: imgW, h: imgH },
     ];
-    aImgs.forEach(drawToCanvas);
+    // aImgs.forEach(drawToCanvas);
 
 
     var _aImgs = [
@@ -64,6 +64,9 @@ function runScript() {
 
         return new Promise((resolve, reject) => {
             const img         = new Image();
+                  // Allows for images obtained from blob to be merged from canvas and exported.
+                  // SEE: https://stackoverflow.com/questions/20424279/canvas-todataurl-securityerror
+                  img.setAttribute('crossOrigin', 'anonymous');
                   img.onload  = () => resolve(img);   
                   img.onerror = () => reject(new Error(`load ${url} fail`));
                   img.src     = containerUrl + url;
@@ -73,9 +76,6 @@ function runScript() {
     var iterator = 0;
 
     function drawToCanvasFromBlob (currentValue, index, array) {
-        log('Draw from Blob:')
-        log(currentValue.uri);
-
         return loadImgFromBlob (currentValue.uri).then(img => {
             getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
             iterator++; 
