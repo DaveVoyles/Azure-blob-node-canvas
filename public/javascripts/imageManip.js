@@ -39,7 +39,7 @@ function runScript() {
     aImgs.forEach(drawToCanvas);
 
 
-    var myImgs = [
+    var _aImgs = [
         { x: xPos, y:  15, w: imgW, h: imgH },
         { x: xPos, y:  80, w: imgW, h: imgH },
         { x: xPos, y: 145, w: imgW, h: imgH },
@@ -47,28 +47,57 @@ function runScript() {
         { x: xPos, y: 275, w: imgW, h: imgH }
     ];
 
-    var _aImgs = [
-        {  x: xPos, y:  15, w: imgW, h: imgH }
-    ];
-
-    /** Receives images from blob storage -> node server
+    /** Receives images from blob storage -> node server.
+     * Set uri property in images array with "name" from blob storage item.
      * BUG: res.length grows each time I call this. Weird?
      * Have to hardcode length of array so that it only returns 5.
      */
     socket.on('sendImgArrToClient', function (res){
-        for (var index = 0; index < 1; index++) {
-            _aImgs[0].uri = res[0].name;
-            log (res[0].name);
-            log(_aImgs);
-        // for (var index = 0; index < 5; index++) {            
-            // for (var j = 0; j < 5; j++) {
-            // }
-            // Why is this still going above 5?
-            // myImgs[index].uri = res;
-
+        for (var index = 0; index < 5; index++) {
+            _aImgs[index].uri = res[index].name;
         }
+        _aImgs.forEach(drawToCanvasFromBob)
     });
   
+    function loadImgFromBlob(url) {
+        var containerUrl = "https://functionsstorageacct.blob.core.windows.net/dumpster/";
+
+        return new Promise((resolve, reject) => {
+            const img          = new Image();
+                  img.onload  = () => resolve(img);   
+                  img.onerror = () => reject(new Error(`load ${url} fail`));
+                  img.src     = containerUrl + url;
+        });
+    };
+
+
+
+    function drawToCanvasFromBob (currentValue, index, array) {
+        log('currentVal.uri:')
+        log(currentValue.uri);
+
+        return loadImgFromBlob (currentValue.uri).then(img => {
+            getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
+            iterator++; 
+            log('drawing');
+            // # of images receives from server. If not hard-coded, this func gets called out of order, 
+            // sent to server before canvas has completed loading images.
+            if (iterator === nMaxImgInArr) { 
+                let canvasImgUrl =  getCanvas().toDataURL(); 
+                // getFiles();
+                // var myFile = renameFile("myName.png");
+                // NOTE: You only need to use one (1) of these options, depending on the format you
+                // want the server to process the image.
+                urltoFile(canvasImgUrl, "myImage.png", 'image/png') 
+                    .then(function(file){ 
+                    socket.emit('sendFileToServer', file);
+                })       
+                //sendAsB64String(canvasImgUrl);
+                //sendAsByteArr(canvasImgUrl);
+            }
+        });
+    };
+
 
     /**
      * Loads images from a url.
@@ -87,7 +116,7 @@ function runScript() {
     let iterator      = 0;
     /**When x number of images are stored on canvas, we can convert to dataURL */
     let nMaxImgInArr  = 5;
-
+    
     /**
      * Draw all imaAdges to canvas. 
      * @param {array}  currentValue - The value of the current element being processed in the array.
@@ -98,6 +127,7 @@ function runScript() {
         return loadImg(currentValue.uri).then(img => {
             getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
             iterator++; 
+            log('drawing');
             // # of images receives from server. If not hard-coded, this func gets called out of order, 
             // sent to server before canvas has completed loading images.
             if (iterator === nMaxImgInArr) { 
@@ -110,8 +140,6 @@ function runScript() {
                     .then(function(file){ 
                        socket.emit('sendFileToServer', file);
                 })       
-                 //sendAsB64String(canvasImgUrl);
-                 //sendAsByteArr(canvasImgUrl);
             }
         });
     };
@@ -199,14 +227,6 @@ function runScript() {
             }
         });
     };
-
-    function mlString(f) {
-        return f.toString().
-            replace(/^[^\/]+\/\*!?/, '');
-            replace(/\*\/[^\/]+$/, '');
-    }
-
-
 
 
 
