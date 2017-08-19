@@ -172,7 +172,8 @@ var sContainer         = process.env.CONTAINER_NAME                 ;
 
 /**
  * @returns dd-mm-yyyy
- * @example: new Date().timeNow() */
+ * @example: new Date().timeNow()
+ */
 Date.prototype.today = function () { 
     return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-');        
 };
@@ -180,7 +181,8 @@ Date.prototype.today = function () {
 
 /**
  * @returns hh-mm
- * @example: new Date().timeNow() */
+ * @example: new Date().timeNow()
+ */
 Date.prototype.timeNow = function () {
     return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds(); 
 };
@@ -226,7 +228,6 @@ function writeFileLocally(sImgName, buf){
         if (err) {throw err;}
     })
 };
-
 
 
 /** Returns a list containing a collection of blob items in the container.*/
