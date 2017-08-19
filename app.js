@@ -23,8 +23,6 @@ log("NODE: Server running on 127.0.0.1:" + port);
 // App configuration
 
 app.set('port', process.env.PORT || 8080);
-
-// view engine setup - HTML works fine out of the box
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(logger('dev'));
@@ -52,21 +50,6 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-
-/**
- * @returns mm-dd-yy
- * @example: new Date().timeNow() */
-Date.prototype.today = function () { 
-    return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear();
-};
-
-/**
- * @returns hh-mm
- * @example: new Date().timeNow() */
-Date.prototype.timeNow = function () {
-    return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
-};
 
 
 /** 
@@ -150,12 +133,11 @@ function socketEvents(socket) {
          */
         socket.on('sendFileToServer',  function (buf){
             log('File buffer received from client');
-            // getBlobsFromAzure(socket);
 
             const readable = new Readable()
-                readable.push(buf)
-                readable.push(null);
-                readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "canvasImage.png"));
+                  readable.push(buf)
+                  readable.push(null);
+                  readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "canvasImage.png"));
         });
 
 
@@ -172,7 +154,6 @@ function socketEvents(socket) {
                 if (err) {throw err;}
             });
         });
-
 };
 
 
@@ -190,23 +171,25 @@ var blobService        = azure.createBlobService()                  ;
 // Temp vars
 var sContainer = "dumpster";
 
+
  module.exports = app; 
-
-
-// OPTIONS:
-// 1. Closure to capture the scope of the socket instance
-// 2. Dependency injection w/ the socket
 
 // -----------------------------------------------------
 // STORAGE
 
-/** Writes a file to the /public/images folder
- * @param {string} sImgName - Name of file to be saved. Needs to end in .png | .jpg
- * @param {array}  buf      - Byte array buffer w/ image data   */
-function writeFileLocally(sImgName, buf){
-        fs.writeFile(__dirname + '/public/images/' + sImgName, buf,  function(err){
-        if (err) {throw err;}
-    })
+/**
+ * @returns dd-mm-yyyy
+ * @example: new Date().timeNow() */
+Date.prototype.today = function () { 
+    return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-');        
+};
+
+
+/**
+ * @returns hh-mm
+ * @example: new Date().timeNow() */
+Date.prototype.timeNow = function () {
+    return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds(); 
 };
 
 
@@ -218,7 +201,7 @@ function writeFileLocally(sImgName, buf){
  */
 function getBlobsFromAzure(socket){
     // Images returned from blob are stored in array, sent to client 
-    var aImgs           = [];
+    var aImgs = [];
     var sNormalizedPath =__dirname + path.normalize('/public/images/'); 
     blobService.listBlobsSegmentedWithPrefix(sContainer, new Date().today(), null, {delimiter: "", maxResults : 5},
         function(err, result) {
@@ -235,11 +218,22 @@ function getBlobsFromAzure(socket){
                 blobService.getBlobToLocalFile(sContainer, element.name, loc, null,
                     function(result, err){}) 
             }, this);
-            // Send array of images to client for processing             
+            // Send array of images to client for processing      
             socket.emit('sendImgArrToClient', aImgs);   
         }
     });
 };
+
+
+/** Writes a file to the /public/images folder
+ * @param {string} sImgName - Name of file to be saved. Needs to end in .png | .jpg
+ * @param {array}  buf      - Byte array buffer w/ image data   */
+function writeFileLocally(sImgName, buf){
+        fs.writeFile(__dirname + '/public/images/' + sImgName, buf,  function(err){
+        if (err) {throw err;}
+    })
+};
+
 
 
 /** Returns a list containing a collection of blob items in the container.*/
@@ -273,6 +267,7 @@ function createBlobFromStream(sName, stream) {
     });
 };
 
+
 /**
  *  Creates a blockblob from local file
  * @param {string} sName - What is the file's name?
@@ -285,6 +280,7 @@ function createBlockBlob(sName, dir) {
         log('dir:   '+ dir  );
         log('data:  '+ data );
     });
+
 
     // BUG: This does not work. No idea why. Submitted report on GitHub
     blobService.createBlockBlobFromLocalFile(sContainer, sName, dir, function(error, result, response) {

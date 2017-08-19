@@ -13,10 +13,10 @@
 function runScript() {
     "use strict";
 
-    const getCanvas        = () => document.getElementById('canvas');
+    const getCanvas          = () => document.getElementById('canvas');
           getCanvas().height = 350;
           getCanvas().width  =  80;
-    const getContext       = () => getCanvas().getContext ('2d'    );
+    const getContext         = () => getCanvas().getContext ('2d'    );
 
     let imgH = 50;
     let imgW = 50;
@@ -137,7 +137,6 @@ function runScript() {
      */ 
     function urltoFile(url, filename, mimeType){
         return (fetch(url)
-            // .then( log('converting img Url to buffer'))
             .then(function(res){return res.arrayBuffer();})
             .then(function(buf){return new File([buf], filename, {type:mimeType});})
         );
@@ -194,6 +193,7 @@ function runScript() {
        
        return byteArray;
    };
+
 
     /** 
      * Saves image and downloads 
