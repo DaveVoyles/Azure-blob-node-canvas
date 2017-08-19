@@ -156,10 +156,10 @@ function socketEvents(socket) {
         });
 };
 
-
+ module.exports = app; 
 
 // -----------------------------------------------------
-// Blob Storage vars
+// STORAGE
 
 // Defined in .env file, using dotenv
 var azure              = require('azure-storage')                   ;
@@ -167,15 +167,8 @@ var storageAccountName = process.env.AZURE_STORAGE_ACCOUNT          ;
 var connString         = process.env.AZURE_STORAGE_CONNECTION_STRING;
 var accessKey          = process.env.AZURE_STORAGE_ACCESS_KEY       ;
 var blobService        = azure.createBlobService()                  ;
+var sContainer         = process.env.CONTAINER_NAME                 ;
 
-// Temp vars
-var sContainer = "dumpster";
-
-
- module.exports = app; 
-
-// -----------------------------------------------------
-// STORAGE
 
 /**
  * @returns dd-mm-yyyy
