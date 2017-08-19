@@ -42,10 +42,6 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-// app.get('/', function(req, res){
-//     res.sendFile(__dirname+'views/index.jade'); // change the path to your index.html
-// });
-
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
@@ -58,28 +54,37 @@ app.use(function(err, req, res, next) {
 });
 
 
-/** new Date().today() */
+/**
+ * @returns mm-dd-yy
+ * @example: new Date().timeNow() */
 Date.prototype.today = function () { 
     return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear();
 };
 
-/** new Date().timeNow() */
+/**
+ * @returns hh-mm
+ * @example: new Date().timeNow() */
 Date.prototype.timeNow = function () {
     return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
 };
 
-function renameFile(fileName){
+
+/** 
+ * @param   {string} filename - Name of file to have date pre-pended
+ * @returns {string} new file name with date pre-pended
+ */
+function prependDateToFile(fileName){
     let newFileName = '';
     let today       = new Date().today  ();
     let now         = new Date().timeNow();
     let extension   = filenNme.split('.').pop();
     var output      = fileName.substr(0, fileName.lastIndexOf('.')) || fileName;
 
-    newFileName = output + today + now + extension;
-    log(newFileName);
+    newFileName = today + now + output + extension;
 
-    // return newFileName;
+    return newFileName;
 };
+
 
 /** Images returned from blob are stored here, sent to client */
 var aImgs           = [];
