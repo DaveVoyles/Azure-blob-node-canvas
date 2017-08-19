@@ -1,4 +1,3 @@
-
    /* Namespace to send / receive socket messages.
     * Call this first to establish connection. When completed, calls the rest of the scripts to execute. */
     const log     = console.log.bind(console);  
@@ -17,6 +16,7 @@ function runScript() {
           getCanvas().height = 350;
           getCanvas().width  =  80;
     const getContext         = () => getCanvas().getContext ('2d'    );
+
 
     let imgH = 50;
     let imgW = 50;
@@ -48,6 +48,10 @@ function runScript() {
     });
 
   
+    /**
+     * Creates a new Image element and sets the source to the name + blob storage container.
+     * @param {string} url - name of the image file located in blob storage 
+     */
     function loadImgFromBlob(url) {
         var containerUrl = "https://functionsstorageacct.blob.core.windows.net/dumpster/";
 
@@ -64,10 +68,17 @@ function runScript() {
 
     
     /** Keeps track of how many times we've drawn an image to the canvas */
-    var iterator = 0;
+    var iterator      = 0;
     /**When when the iterator matches this #, we can convert to dataURL */
     let nMaxImgInArr  = 5;
     
+    /**
+     * Draws images from blob storage to canvas. Converts canvas
+     * to a .png file & sends it back to node server, which will merged images in blob storage.
+     * @param {number} currentValue - The value of the current element being processed in the array.
+     * @param {number} index        - The index of the current element being processed in the array.
+     * @param {array} array         - The array that forEach() is being applied to.
+     */
     function drawToCanvasFromBlob (currentValue, index, array) {
         return loadImgFromBlob (currentValue.uri).then(img => {
             getContext().drawImage(img, currentValue.x, currentValue.y, currentValue.w, currentValue.h);
@@ -87,7 +98,8 @@ function runScript() {
 
 
     /**
-     * Loads images from a url.
+     * Loads an image url passed from blob storage & creates a new Image element and sets 
+     * the URI Loads images from a url.
      * @param {string} url - Addresss image is located at. 
      */
     function loadImg(url) {
@@ -97,30 +109,6 @@ function runScript() {
                   img.onerror = () => reject(new Error(`load ${url} fail`));
                   img.src     = url;
         });
-    };
-
-    /** new Date().today() */
-    Date.prototype.today = function () { 
-        return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-')       
-    };
-
-    /** new Date().timeNow() */
-    Date.prototype.timeNow = function () {
-        return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
-    };
-
-    /** Rename file by appending today's date. Probably not needed anymore */
-    function renameFile(fileName){
-        let newFileName = '';
-        let today       = new Date().today  ();
-        let now         = new Date().timeNow();
-        let extension   = fileName.split('.').pop();
-        var output      = fileName.substr(0, fileName.lastIndexOf('.')) || fileName;
-
-        newFileName = output + '-' + today  + '.' + extension;
-        log(newFileName);
-
-        // return newFileName;
     };
 
 
@@ -145,6 +133,39 @@ function runScript() {
 
 // -----------------------------------------------------
 // UN-USED FUNCTIONS
+
+    /**
+     * @returns dd-mm-yyyy
+     * @example: new Date().timeNow()
+     */
+    Date.prototype.today = function () { 
+        return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-')       
+    };
+
+
+    /**
+     * @returns hh-mm
+     * @example: new Date().timeNow()
+     */
+    Date.prototype.timeNow = function () {
+        return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
+    };
+
+
+    /** 
+     * @param   {string} filename - Name of file to have date pre-pended
+     * @returns {string} new file name with date pre-pended
+     */
+    function prependDateToFile(fileName){
+        let newFileName = '';
+        let today       = new Date().today  ();
+        let now         = new Date().timeNow();
+        let extension   = filenNme.split('.').pop();
+        var output      = fileName.substr(0, fileName.lastIndexOf('.')) || fileName;
+        newFileName     = today + now + output + extension;
+
+        return newFileName;
+    };
 
     /** Saves image and redirects page to the image */
     function saveCanvasToImgAndRedirect(){
