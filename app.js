@@ -79,104 +79,101 @@ function prependDateToFile(fileName){
     let now         = new Date().timeNow();
     let extension   = filenNme.split('.').pop();
     var output      = fileName.substr(0, fileName.lastIndexOf('.')) || fileName;
-
-    newFileName = today + now + output + extension;
+    newFileName     = today + now + output + extension;
 
     return newFileName;
 };
 
 
-/** Images returned from blob are stored here, sent to client */
-var aImgs           = [];
-//-------------------------------------------------------------
-// Create funciton: SetupEvents(socket){
-    // Insert events here
-    // Ex: socket.on ('whatever')
-//};
+// -----------------------------------------------------
+// SOCKET.IO EVENT
 
-// Socket.io connections
 io.on('connection', function (socket) { // <--- use SetupEvents here
-log('Socket.io connection etablished');
-
-// ENTRY POINT -> Kick off main event to get blobs, send to client
-getBlobsFromAzure(socket);
-
-  socket.on('error', function(e) {
-    throw new error;
-  });
-
-  socket.on('disconnect', function(err) {
-    log('Client disconnected: ' + err);
-  });
-
-  socket.on('createBlockBlob', (payload) => {
-    log("Creating block blob");
-    createBlockBlob(payload);// <-- Pass the socket in here
-  });
-
-  // Receives file from web app & copies locally
-  var dir             = '';
-  var sNormalizedPath =__dirname + path.normalize('/public/images/');  
-
-    // -- B64 STRING
-    socket.on('sendB64ToServer', function(b64String) {
-        log('b64String received from client');
-        const buffer   = new Buffer(b64String, 'base64')
-        const readable = new Readable()
-              readable._read = function () {} // _read is required but you can noop it
-              readable.push(buffer);
-              readable.pipe(
-                    blobService.createWriteStreamToBlockBlob("dumpster","myNewImage.png", 
-                        function (err, result, res) {
-                            if (err) { log.error(err); } 
-                            else {
-                                log(result);
-                                log(res);
-                            }
-                        })
-                        .on("data", function (chunk) {
-                            log("get data : " + chunk);
-                        })
-            )
-    });
-
-
-    // -- FILE
-    /**
-     * Receives file from client & converts to a readable stream. Then, pipes the stream to 
-     * Blob Storage.
-     */
-    socket.on('sendFileToServer',  function (buf){
-        log('File buffer received from client');
-        // getBlobsFromAzure(socket);
-
-        const readable = new Readable()
-              readable.push(buf)
-              readable.push(null);
-              readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "canvasImage.png"));
-    });
-
-
-    // -- BYTE ARRAY
-    socket.on('sendByteArrToServer', function (buf){
-        log('Buffer array received from client');
-
-    var newfile  = writeFileLocally(sName, buf);
-    var myName   = sName;
-
-    fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
-        imgBuffData = data;
-        dir         = sNormalizedPath + sName;
-        //    log(dir);          
-        //    log(myName);
-        //    log(imgBuffData);
-        if (err) {throw err;}
-    });
-        // createBlockBlob(myName, dir);
-        // createBlobFromStream(myName, buf, buf.length);
-    });
-
+    log('Socket.io connection etablished');
+    socketEvents(socket);
 }); 
+
+
+/**
+ * All events which socket.io server should be listening for
+ * @param {object} socket - Current socket.io instance 
+ */
+function socketEvents(socket) {
+    // ENTRY POINT -> Kick off main event to get blobs, send to client
+    getBlobsFromAzure(socket);
+
+        socket.on('error', function(e) {
+            throw new error;
+        });
+
+        socket.on('disconnect', function(err) {
+            log('Client disconnected: ' + err);
+        });
+
+        socket.on('createBlockBlob', (payload) => {
+            log("Creating block blob");
+            createBlockBlob(payload);// <-- Pass the socket in here
+        });
+
+        // Receives file from web app & copies locally
+        var dir             = '';
+        var sNormalizedPath =__dirname + path.normalize('/public/images/');  
+
+
+        // -- B64 STRING
+        socket.on('sendB64ToServer', function(b64String) {
+            log('b64String received from client');
+            const buffer   = new Buffer(b64String, 'base64')
+            const readable = new Readable()
+                readable._read = function () {} // _read is required but you can noop it
+                readable.push(buffer);
+                readable.pipe(
+                        blobService.createWriteStreamToBlockBlob("dumpster","myNewImage.png", 
+                            function (err, result, res) {
+                                if (err) { log.error(err); } 
+                                else {
+                                    log(result);
+                                    log(res);
+                                }
+                            })
+                            .on("data", function (chunk) {
+                                log("get data : " + chunk);
+                            })
+                )
+        });
+
+
+        // -- FILE
+        /**
+         * Receives file from client & converts to a readable stream. Then, pipes the stream to 
+         * Blob Storage.
+         */
+        socket.on('sendFileToServer',  function (buf){
+            log('File buffer received from client');
+            // getBlobsFromAzure(socket);
+
+            const readable = new Readable()
+                readable.push(buf)
+                readable.push(null);
+                readable.pipe(blobService.createWriteStreamToBlockBlob("dumpster", "canvasImage.png"));
+        });
+
+
+        // -- BYTE ARRAY
+        socket.on('sendByteArrToServer', function (buf){
+            log('Buffer array received from client');
+
+            var newfile  = writeFileLocally(sName, buf);
+            var myName   = sName;
+
+            fs.readFile(__dirname + '/public/images/' + sName, function(err,data){
+                imgBuffData = data;
+                dir         = sNormalizedPath + sName;
+                if (err) {throw err;}
+            });
+        });
+
+};
 
 
 
@@ -214,10 +211,14 @@ function writeFileLocally(sImgName, buf){
 
 
 /**
- *  Return blobs with the prefix of today's date, then sends the array of images to client for processing.
+ * Grabs blobs with the prefix of today's date, then sends the array of images to client for processing.
+ * NOTE: Only works if there are files in blob prefixed with today's date in format: dd-mm-yy
+ * EXAMPLE: 19-8-17-cat.jpg
  * @param {object} socket - socket.io connection 
  */
 function getBlobsFromAzure(socket){
+    // Images returned from blob are stored in array, sent to client 
+    var aImgs           = [];
     var sNormalizedPath =__dirname + path.normalize('/public/images/'); 
     blobService.listBlobsSegmentedWithPrefix(sContainer, new Date().today(), null, {delimiter: "", maxResults : 5},
         function(err, result) {
@@ -240,8 +241,9 @@ function getBlobsFromAzure(socket){
     });
 };
 
+
 /** Returns a list containing a collection of blob items in the container.*/
-function listBlobs () {
+function listBlobsInContainer() {
     blobService.listBlobsSegmented(sContainer, null, function(err, result) {
          if (err) {
             log("Couldn't list containers");
@@ -271,18 +273,6 @@ function createBlobFromStream(sName, stream) {
     });
 };
 
-/** new Date().today() */
-Date.prototype.today = function () { 
-    return new Date().toISOString().replace(/T.*/,'').split('-').reverse().join('-')       
-};
-
-
-/** new Date().timeNow() */
-Date.prototype.timeNow = function () {
-    return ((this.getHours() < 10)?"0":"") + this.getHours() +"-"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
-};
-
-
 /**
  *  Creates a blockblob from local file
  * @param {string} sName - What is the file's name?
@@ -296,7 +286,7 @@ function createBlockBlob(sName, dir) {
         log('data:  '+ data );
     });
 
-    // BUG: This does not work. No idea why.
+    // BUG: This does not work. No idea why. Submitted report on GitHub
     blobService.createBlockBlobFromLocalFile(sContainer, sName, dir, function(error, result, response) {
         if (!error) {
             // log(result  );
