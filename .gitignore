@@ -58,5 +58,5 @@ typings/
 .env
 
 # Images
-.jpg
-.png
+*.jpg
+*.png

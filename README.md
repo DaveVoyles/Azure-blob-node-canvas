@@ -1,4 +1,9 @@
+### Author(s): Dave Voyles | [@DaveVoyles](http://www.twitter.com/DaveVoyles)
+### URL: [www.DaveVoyles.com][1]
+
 Express application with socket.io for sending image byte data between Azure Blob Storage <-> Node Server <-> HTML client. 
+----------
+### About
 
 The end goal is to retrieve images from blob storage, merge them into a single vertical strip image and upload to blob storage. 
 
@@ -37,8 +42,8 @@ When a socket connection is established with the client, the socket.io event *ge
 
 ```
 /**
- * Grabs blobs with the prefix of today's date, then sends the array of images to client for processing.
- * NOTE: Only works if there are files in blob prefixed with today's date in format: dd-mm-yy
+ * Grabs blobs with the prefix of today's date, then sends the array of images * to client for processing.
+ * NOTE: Only works if there are files in blob prefixed with today's date in    * format: dd-mm-yy
  * EXAMPLE: 19-8-17-cat.jpg
  * @param {object} socket - socket.io connection 
  */
@@ -46,6 +51,7 @@ When a socket connection is established with the client, the socket.io event *ge
 
 
  **NOTE** 
+
  If you do not have any files with the date prefixed, the blob storage function will not return any images. Example: *9-8-17-*
 
  It occurs in this function:
